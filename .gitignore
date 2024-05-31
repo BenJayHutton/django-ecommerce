@@ -1,5 +1,13 @@
 #custom ignore settings
 *.code-workspace
+/bin
+/include
+/lib
+/lib64
+*.cfg
+local.py
+production.py
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
