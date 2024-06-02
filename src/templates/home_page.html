@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content%}
+<main class="px-16 py-6 bg-gray-100">
+    <header>
+        <h2 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Welcome</h2>
+        <h3 class= "text-sm md:text-xl lg:text-3xl">Ninjas</h3>
+    </header>
+
+    <div>
+        <h4 class="font-bold mt-12 pb-2 border-b border-gray-200">Featured Products</h4>
+        <div class="mt-8 grid lg:grid-cols-3 gap-10">
+            <!-- cards go here -->
+        </div>
+
+        <h4 class="font-ligh mt-12 pb-2 border-b border-gray-200">Most Popular</h4>
+
+        <div class="mt-8">
+            <!-- Card goes here -->
+        </div>
+
+        <div class="flex justify-center">
+            <div class="btn bg-secondary-100 text-secondary-200 hover:shadow-inner transform hover:scale-125 hover:bg-opacity-50 transition ease-out duration-300">Load more</div>
+        </div>
+    </div>
+</main>
+{% endblock %}
