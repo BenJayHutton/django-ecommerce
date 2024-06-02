@@ -1,0 +1,7 @@
+# import settings.py
+
+SECRET_KEY = ''
+
+ALLOWED_HOSTS = []
+
+DEBUG = True/False
