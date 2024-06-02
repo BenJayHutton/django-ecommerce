@@ -5,6 +5,7 @@
 /lib
 /lib64
 static
+local-cdn
 *.cfg
 local.py
 production.py
