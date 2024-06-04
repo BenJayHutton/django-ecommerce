@@ -25,6 +25,8 @@ class ProductListView(ListView):
         context = super(ProductListView,self).get_context_data(
             *args,
             **kwargs)
+        context['title'] = "Products"
+        context['description'] = "Products for sale"
         return context
         
 

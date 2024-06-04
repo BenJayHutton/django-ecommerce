@@ -1,6 +1,7 @@
 from django.db import models
+from django.db.models import Q
 
-class TagQuerySet(models.query.QuerySet):
+class TagQuerySet(models.query.QuerySet): # class.objects.all().attribute
     def public(self):
         return self.filter(public=True)
     
@@ -25,9 +26,46 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+    
+class ProductQuerySet(models.query.QuerySet):  # class.objects.all().attribute
+    def active(self):
+        return self.filter(active=True)
+
+    def featured(self):
+        return self.filter(featured=True, active=True)
+    
+    def get_product_by_id(self, id):
+        return self.filter(id=id)
+
+    def search(self, query):
+        lookups = (Q(title__icontains=query) |
+                   Q(description__icontains=query) |
+                   Q(price__icontains=query)|
+                   Q(tags__name__icontains=query)
+                   )
+        return self.filter(lookups)
+
 
 class ProductManager(models.Manager):
-    pass
+    # overriding get_queryset so we can use the queryset above
+    def get_queryset(self):
+        return ProductQuerySet(self.model, using=self._db)
+    
+    def active(self):
+        return self.get_queryset().active()
+    
+    def featured(self):
+        return self.get_queryset().featured()
+    
+    def get_by_id(self, id):
+        qs = self.get_queryset().filter(id=id)
+        if qs.count() == 1:
+            return qs.first()
+        else:
+            return None
+        
+    def search(self, query):
+        return self.get_queryset().active().search(query)
 
 class Product(models.Model):
     title = models.CharField(max_length=120)
