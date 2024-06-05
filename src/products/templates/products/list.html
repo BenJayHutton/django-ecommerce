@@ -1,4 +1,12 @@
 {% extends "base.html" %}
 {% block content%}
 <h2>List Product View</h2>
+<div>
+    {% for product in product_list %}
+    <div>
+        {{product}}
+    </div>
+    {% endfor %}
+</div>
+
 {% endblock %}

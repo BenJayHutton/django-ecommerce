@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+    <div>
+        {% if query %}
+            {% for result in object_list %}
+            <div>
+                result:
+                <br>{{result.title}}
+                <br>{{result.image}}
+            </div>
+            <br>
+            {% endfor %}
+        {% else %}
+            <div>
+                {% include 'search/snippets/search-form.html'%}
+            </div>
+    {% endif %}
+    </div>
+{% endblock %}
+<div>
+    {% for result in object_list %}
+    <div>
+        {{result.title}}
+    </div>
+    {% endfor %}
+</div>

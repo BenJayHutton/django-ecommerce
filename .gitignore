@@ -9,6 +9,7 @@ local-cdn
 *.cfg
 local.py
 production.py
+Notes.md
 
 
 # Byte-compiled / optimized / DLL files
