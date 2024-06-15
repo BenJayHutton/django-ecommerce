@@ -1,26 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
+<main class="px-16 py-6 bg-gray-100">
+    <header>
+        <h4 class="font-bold mt-12 pb-2 border-b border-gray-200">Results</h4>
+    </header>
     <div>
         {% if query %}
-            {% for result in object_list %}
-            <div>
-                result:
-                <br>{{result.title}} <br>
-                <img src="{{result.image.url}}" alt="{{result.title}}">
-            </div>
-            <br>
-            {% endfor %}
+        {% for result in object_list %}
+        <div>
+            <br>{{result.title}} <br>
+            <img src="{{result.image.url}}" alt="{{result.title}}">
+        </div>
+        {% endfor %}
         {% else %}
-            <div>
-                {% include 'search/snippets/search-form.html'%}
-            </div>
-    {% endif %}
+        <div>
+            {% include 'search/snippets/search-form.html'%}
+        </div>
+        {% endif %}
     </div>
+</main>
 {% endblock %}
-<div>
-    {% for result in object_list %}
-    <div>
-        {{result.title}}
-    </div>
-    {% endfor %}
-</div>
