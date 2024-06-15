@@ -5,8 +5,8 @@
             {% for result in object_list %}
             <div>
                 result:
-                <br>{{result.title}}
-                <br>{{result.image}}
+                <br>{{result.title}} <br>
+                <img src="{{result.image.url}}" alt="{{result.title}}">
             </div>
             <br>
             {% endfor %}
