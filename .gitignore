@@ -4,8 +4,10 @@
 /include
 /lib
 /lib64
-static
-local-cdn
+static_root
+media_root
+local_cdn
+py_client
 *.cfg
 local.py
 production.py
