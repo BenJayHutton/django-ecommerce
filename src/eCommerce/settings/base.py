@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     # project app
     'api',
     'products',
+    'rest_framework',
     'search',
 ]
 
