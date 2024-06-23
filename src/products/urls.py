@@ -1,7 +1,5 @@
 from django.urls import path
 from .views import (
-    ProductCreateAPIView,
-    ProductDetailAPIView,
     ProductCreateView,
     ProductUpdateView,
     product_delete_view,
