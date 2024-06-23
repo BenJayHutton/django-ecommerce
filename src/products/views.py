@@ -1,3 +1,4 @@
+from rest_framework import generics
 from django.shortcuts import render
 from django.views.generic import (
     CreateView,
@@ -6,6 +7,20 @@ from django.views.generic import (
     DetailView
 )
 from .models import Product
+from .serializers import ProductSerializer
+
+class ProductCreateAPIView(generics.CreateAPIView):
+    ueryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def perform_create(self, serializer):
+        # serializer.save(user=request.user.user)
+        print("serializer", serializer)
+        serializer.save()
+
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
 class ProductCreateView(CreateView):
     pass
