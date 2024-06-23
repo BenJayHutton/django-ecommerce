@@ -20,12 +20,38 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # serializer.save(user=request.user.user)
-        print("serializer", serializer)
-        serializer.save()
+        title = serializer.validated_data.get('title')
+        description = serializer.validated_data.get('description') or None
+        if description is None:
+            description = title
+        serializer.save(description=description)
 
 class ProductDetailAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+
+
+class ProductUpdateAPIView(generics.UpdateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if not instance.description:
+            instance.description = instance.title
+
+
+class ProductDestroyAPIView(generics.DestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+
+    def perform_destroy(self, instance):
+        # instance
+        super().perform_destroy(instance)
+
+
 
 @api_view(['GET', 'POST'])
 def product_alt_list_view(request, pk=None, *args, **kwargs):
