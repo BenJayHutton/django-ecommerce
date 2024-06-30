@@ -20,8 +20,8 @@ from .serializers import ProductSerializer
 from api.authentication import TokenAuthentication
 
 class ProductListCreateAPIView(
-    generics.ListCreateAPIView,
-    StaffEditorPermissionMixin
+    StaffEditorPermissionMixin,
+    generics.ListCreateAPIView
     ):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -34,22 +34,20 @@ class ProductListCreateAPIView(
         serializer.save(description=description)
 
 class ProductDetailAPIView(
-    generics.RetrieveAPIView,
-    StaffEditorPermissionMixin
+    StaffEditorPermissionMixin,
+    generics.RetrieveAPIView
     ):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
 
 class ProductUpdateAPIView(
-    generics.UpdateAPIView,
-    StaffEditorPermissionMixin
+    StaffEditorPermissionMixin,
+    generics.UpdateAPIView
     ):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'pk'
-    authentication_classes = [authentication.SessionAuthentication]
-    permission_classes =[permissions.DjangoModelPermissions]
 
     def perform_update(self, serializer):
         instance = serializer.save()

@@ -7,5 +7,4 @@ router = DefaultRouter()
 app_name = 'api_v2'
 
 router.register('products-abc', ProductViewSet, basename = 'products')
-print(router.urls)
 urlpatterns = router.urls
