@@ -19,6 +19,8 @@ from django.conf import settings
 from django.urls import include, path
 from .views import DefaultHomePage
 
+app_name = 'eCommerce'
+
 urlpatterns = [
     path('', DefaultHomePage.as_view(), name='home'),
     path('admin/', admin.site.urls),
@@ -26,6 +28,7 @@ urlpatterns = [
     path('products/', include('products.urls', namespace='products')),
     path('search/', include('search.urls', namespace='search')),
     path('api/', include('api.urls', namespace='api')),
+    path('api/v2/', include('eCommerce.routers', namespace='api_v2')),
 ]
 
 if settings.DEBUG:

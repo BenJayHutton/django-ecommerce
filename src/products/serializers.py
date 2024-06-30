@@ -9,6 +9,7 @@ class ProductSerializer(serializers.ModelSerializer):
         # required fields, if you don't send them for serialization, 
         # it will returna valid error
         fields = [
+            'pk',
             'title',
             'slug',
             'description',

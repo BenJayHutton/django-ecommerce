@@ -8,6 +8,7 @@ from .views import (
     )
 
 app_name = 'products'
+
 urlpatterns = [
     path('', ProductListView.as_view(), name='list'),
     path('create/', ProductCreateView.as_view(), name='create'),
