@@ -1,5 +1,8 @@
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
+
+User = settings.AUTH_USER_MODEL
 
 class TagQuerySet(models.query.QuerySet): # class.objects.all().attribute
     def public(self):
@@ -68,6 +71,7 @@ class ProductManager(models.Manager):
         return self.get_queryset().active().search(query)
 
 class Product(models.Model):
+    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
     title = models.CharField(max_length=120)
     slug = models.SlugField(blank=True, unique=True)
     description = models.TextField(blank=True, null=True)

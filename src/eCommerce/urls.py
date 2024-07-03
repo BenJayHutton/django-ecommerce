@@ -24,11 +24,11 @@ app_name = 'eCommerce'
 urlpatterns = [
     path('', DefaultHomePage.as_view(), name='home'),
     path('admin/', admin.site.urls),
+    path('api/', include('api.urls', namespace='api')),
+    path('api/v2/', include('eCommerce.routers', namespace='api_v2')),
     path('product/', include('products.urls',namespace='product')),
     path('products/', include('products.urls', namespace='products'), name="products"),
     path('search/', include('search.urls', namespace='search')),
-    path('api/', include('api.urls', namespace='api')),
-    path('api/v2/', include('eCommerce.routers', namespace='api_v2')),
 ]
 
 if settings.DEBUG:
