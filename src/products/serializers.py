@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
+from api.serializers import UserPublicSerializer
+
 from .models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
-    my_discount = serializers.SerializerMethodField(read_only=True)
+    owner = UserPublicSerializer(source='user', read_only=True)
     edit_url = serializers.SerializerMethodField(read_only=True)
     url= serializers.HyperlinkedIdentityField(
         view_name='api:product-detail',
@@ -15,6 +17,7 @@ class ProductSerializer(serializers.ModelSerializer):
         # required fields, if you don't send them for serialization, 
         # it will returna valid error
         fields = [
+            'owner',
             'url',
             'edit_url',
             'pk',
@@ -22,7 +25,6 @@ class ProductSerializer(serializers.ModelSerializer):
             'slug',
             'description',
             'price',
-            'my_discount',
         ]
     def get_edit_url(self, obj):
         request = self.context.get('request')
