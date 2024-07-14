@@ -102,3 +102,6 @@ class Product(models.Model):
 
     def get_discount(self):
         return "122"
+    
+    def is_public(self):
+        return self.public
