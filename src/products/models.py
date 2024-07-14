@@ -31,22 +31,29 @@ class Tag(models.Model):
         return self.name
     
 class ProductQuerySet(models.query.QuerySet):  # class.objects.all().attribute
-    def active(self):
+    def is_active(self):
         return self.filter(active=True)
 
-    def featured(self):
+    def is_featured(self):
         return self.filter(featured=True, active=True)
+    
+    def is_public(self):
+        return self.filter(public=True, active=True)
     
     def get_product_by_id(self, id):
         return self.filter(id=id)
 
-    def search(self, query):
-        lookups = (Q(title__icontains=query) |
+    def search(self, query, user=None):
+        lookup = (Q(title__icontains=query) |
                    Q(description__icontains=query) |
                    Q(price__icontains=query)|
                    Q(tags__name__icontains=query)
                    )
-        return self.filter(lookups)
+        qs = self.is_public().filter(lookup)
+        if user is not None:
+            qs2 = self.filter(user=user).filter(lookup)
+            qs = (qs|qs2).distinct()
+        return qs
 
 
 class ProductManager(models.Manager):
@@ -67,24 +74,26 @@ class ProductManager(models.Manager):
         else:
             return None
         
-    def search(self, query):
-        return self.get_queryset().active().search(query)
+    def search(self, query, user=None):
+        return self.get_queryset().search(query, user=user)
 
 class Product(models.Model):
-    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
-    title = models.CharField(max_length=120)
-    slug = models.SlugField(blank=True, unique=True)
-    description = models.TextField(blank=True, null=True)
-    price = models.FloatField(default=0.00, max_length=2)
-    vat = models.FloatField(default=0.00, max_length=2)
-    image = models.ImageField(default='products/150x150.png', upload_to='products/', null=True, blank=True)
-    featured = models.BooleanField(default=False)
-    quantity = models.IntegerField(default=0)
     active = models.BooleanField(default=True)
+    description = models.TextField(blank=True, null=True)
+    featured = models.BooleanField(default=False)
+    image = models.ImageField(default='products/150x150.png', upload_to='products/', null=True, blank=True)
     is_digital = models.BooleanField(default=False)
+    price = models.FloatField(default=0.00, max_length=2)
+    public = models.BooleanField(default=True)
+    quantity = models.IntegerField(default=0)
+    slug = models.SlugField(blank=True, unique=True)
     tags = models.ManyToManyField(Tag, blank=True)
-    weight_in_grams = models.FloatField(default=0.00, max_length=2)
     timestamp = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length=120)
+    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
+    vat = models.FloatField(default=0.00, max_length=2)
+    weight_in_grams = models.FloatField(default=0.00, max_length=2)
+    
 
     objects = ProductManager()
 
