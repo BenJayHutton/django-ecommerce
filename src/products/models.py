@@ -102,8 +102,8 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
-    def get_discount(self):
-        return "122"
+    def discount(self, discount=0):
+        return self.price * discount
     
     def is_public(self):
         return self.public

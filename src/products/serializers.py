@@ -8,6 +8,7 @@ from .models import Product
 class ProductSerializer(serializers.ModelSerializer):
     owner = UserPublicSerializer(source='user', read_only=True)
     edit_url = serializers.SerializerMethodField(read_only=True)
+    discount = serializers.SerializerMethodField(read_only=True)
     url= serializers.HyperlinkedIdentityField(
         view_name='api:product-detail',
         lookup_field = 'pk',
@@ -25,6 +26,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'slug',
             'description',
             'price',
+            'discount',
             'public',
             'tags',
         ]
@@ -34,9 +36,9 @@ class ProductSerializer(serializers.ModelSerializer):
             return None
         return reverse("api:product-update", kwargs={"pk":obj.pk}, request=request)
     
-    def get_my_discount(self, obj):
+    def get_discount(self, obj):
         if not hasattr(obj,'id'):
             return None
         if not isinstance(obj, Product):
             return None
-        return obj.get_discount()
+        return obj.discount(discount=0.1)
