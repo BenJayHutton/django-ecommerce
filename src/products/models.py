@@ -77,23 +77,25 @@ class ProductManager(models.Manager):
     def search(self, query, user=None):
         return self.get_queryset().search(query, user=user)
 
+
+
+
 class Product(models.Model):
-    active = models.BooleanField(default=True)
-    description = models.TextField(blank=True, null=True)
-    featured = models.BooleanField(default=False)
-    image = models.ImageField(default='products/150x150.png', upload_to='products/', null=True, blank=True)
-    is_digital = models.BooleanField(default=False)
-    price = models.FloatField(default=0.00, max_length=2)
-    public = models.BooleanField(default=True)
-    quantity = models.IntegerField(default=0)
+    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
+    title = models.CharField(max_length=120)
     slug = models.SlugField(blank=True, unique=True)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(default='products/150x150.png', upload_to='products/', null=True, blank=True)
+    price = models.FloatField(default=0.00, max_length=2)
+    vat = models.FloatField(default=0.00, max_length=2)
+    quantity = models.IntegerField(default=0)
+    weight_in_grams = models.FloatField(default=0.00, max_length=2)
+    active = models.BooleanField(default=True)
+    featured = models.BooleanField(default=False)
+    is_digital = models.BooleanField(default=False)
+    public = models.BooleanField(default=True)
     tags = models.ManyToManyField(Tag, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=120)
-    user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
-    vat = models.FloatField(default=0.00, max_length=2)
-    weight_in_grams = models.FloatField(default=0.00, max_length=2)
-    
 
     objects = ProductManager()
 
@@ -105,3 +107,6 @@ class Product(models.Model):
     
     def is_public(self):
         return self.public
+
+    def tag_name(self):
+        return[str(tags) for tags in self.tags.all()]

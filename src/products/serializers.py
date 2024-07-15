@@ -26,6 +26,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'description',
             'price',
             'public',
+            'tags',
         ]
     def get_edit_url(self, obj):
         request = self.context.get('request')
