@@ -8,6 +8,9 @@ from products.views import (
     ProductListCreateAPIView,
     ProductUpdateAPIView
     )
+from search.views import(
+    SearchApiProductView,
+)
 
 app_name = 'api'
 
@@ -18,4 +21,5 @@ urlpatterns = [
     path('product/<int:pk>/delete/', ProductDestroyAPIView.as_view(), name="product-delete"),
     path('product/<int:pk>/', ProductDetailAPIView.as_view(), name="product-detail"),
     path('products/', ProductListCreateAPIView.as_view(), name="product_create"),
+    path('search/', SearchApiProductView.as_view(), name='search'),
 ]

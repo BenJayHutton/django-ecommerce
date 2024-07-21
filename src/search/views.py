@@ -5,8 +5,20 @@ from products.models import Product, Tag
 from products.serializers import ProductSerializer
 
 from rest_framework import generics
+from rest_framework.response import Response
 
-class SearchApiProductView(generics.ListAPIView):
+from . import client
+
+class SearchApiProductView(generics.GenericAPIView):
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('q')
+        tag = request.GET.get('tag') or None
+        if not query:
+            return Response('', status=400)
+        results = client.perform_serch(query, tags=tag)
+        return Response(results)
+
+class OldSearchApiProductView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
