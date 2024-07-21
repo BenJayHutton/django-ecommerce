@@ -9,13 +9,16 @@ def get_index(index_name='Product'):
     return index
 
 
-def perform_serch(query, **kwargs):
+def perform_search(query, **kwargs):
     index = get_index()
-    params = []
-    tag = ""
-    if "tags" in kwargs:
-        tags = kwargs.pop("tags") or []
+    params = {}
+    tags = ""
+    if "tag" in kwargs:
+        tags = kwargs.pop("tag") or []
         if len(tags) != 0:
-            params["tagsFilters"] = tags
-    results = index.search(query)
+            params["tagFilters"] = tags
+    index_filters = [f"{k}:{v}" for k,v in kwargs.items() if v]
+    if len(index_filters) != 0:
+        params["facetFilters"] = index_filters
+    results = index.search(query, params)
     return results
