@@ -13,6 +13,8 @@ class ProductSerializer(serializers.ModelSerializer):
         view_name='api:product-detail',
         lookup_field = 'pk',
     )
+    body = serializers.CharField(source='description')
+
     class Meta:
         model= Product
         # required fields, if you don't send them for serialization, 
@@ -21,10 +23,12 @@ class ProductSerializer(serializers.ModelSerializer):
             'owner',
             'url',
             'edit_url',
+            'path',
+            'endpoint',
             'pk',
             'title',
             'slug',
-            'description',
+            'body',
             'price',
             'discount',
             'public',

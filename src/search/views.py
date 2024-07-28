@@ -17,7 +17,6 @@ class SearchApiProductView(generics.GenericAPIView):
         query = request.GET.get('q')
         public = str(request.GET.get('public')) !="0"
         tags = request.GET.get('tags') or None
-        print("user, query, public, tags: -",user, query, public, tags)
         if not query:
             return Response('', status=400)
         results = client.perform_search(query, tags=tags, user=user, public=public)

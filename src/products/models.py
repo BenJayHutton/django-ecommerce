@@ -99,6 +99,21 @@ class Product(models.Model):
 
     objects = ProductManager()
 
+    def get_absolute_url(self):
+        return f"/product/{self.pk}/"
+
+    @property
+    def endpoint(self):
+        return self.get_absolute_url()
+    
+    @property
+    def path(self):
+        return f"/product/{self.pk}/"
+    
+    @property
+    def body(self):
+        return self.description
+
     def __str__(self):
         return self.title
 
@@ -110,3 +125,4 @@ class Product(models.Model):
 
     def tag_name(self):
         return[str(tags) for tags in self.tags.all()]
+    
