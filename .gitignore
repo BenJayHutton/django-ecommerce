@@ -8,6 +8,7 @@ static_root
 media_root
 local_cdn
 py_client
+js_client
 *.cfg
 local.py
 production.py

@@ -38,18 +38,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #Third party packages
     'algoliasearch_django',
-    # project app
-    'api',
-    'products',
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    # project app
+    'api',
+    'products',
     'search',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -58,6 +60,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'eCommerce.urls'
+CORS_URLS_REGEX = r"^/api/.*"
 
 TEMPLATES = [
     {
