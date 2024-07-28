@@ -12,6 +12,7 @@ py_client
 local.py
 production.py
 Notes.md
+creds.json
 
 
 # Byte-compiled / optimized / DLL files
