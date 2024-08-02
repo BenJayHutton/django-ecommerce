@@ -15,8 +15,6 @@ def api_home(request, *args, **kwargs):
     """
     serializer = ProductSerializer(data=request.data)
     if serializer.is_valid():
-        # instance = serializer.save()
-        print(serializer.data)
         return Response(serializer.data)
     else:
         return JsonResponse({"error":serializer.errors})

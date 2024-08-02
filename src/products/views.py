@@ -78,7 +78,6 @@ def product_alt_list_view(request, pk=None, *args, **kwargs):
     method = request.method
 
     if method == 'GET':
-        print("pk value", pk)
         if pk is not None:
             # detail view
             obj = get_object_or_404(Product, pk=pk)
