@@ -42,13 +42,13 @@ class SearchProductView(ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(SearchProductView, self).get_context_data(*args, **kwargs)
-        query = self.request.GET.get('query')
+        query = self.request.GET.get('q')
         product_search = Product.objects.search(query)        
-        context['query'] = product_search
+        context['q'] = product_search
         return context
 
     def get_queryset(self, *args, **kwargs):
         request = self.request
         method_dict = request.GET
-        query = method_dict.get('query', None)
+        query = method_dict.get('q', None)
         return Product.objects.search(query)

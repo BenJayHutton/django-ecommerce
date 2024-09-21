@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
-<main class="px-16 py-6 bg-gray-100">
-    <header>
+<main class="px-16 py-6 bg-gray-100" id="search-main">
+    <header id="search-header">
         <h4 class="font-bold mt-12 pb-2 border-b border-gray-200">Results</h4>
     </header>
-    <div>
+    <div id="search-div">
         {% if query %}
-        {% for result in object_list %}
-        <div>
-            <br>{{result.title}} <br>
-            <img src="{{result.image.url}}" alt="{{result.title}}">
+        <div name="search-div-result">
+            {% for result in object_list %}
+                <br>{{result.title}} <br>
+                <img src="{{result.image.url}}" alt="{{result.title}}">
+            {% endfor %}
         </div>
-        {% endfor %}
         {% else %}
-        <div>
+        <div id="search-form-div">
             {% include 'search/snippets/search-form.html'%}
         </div>
         {% endif %}

@@ -21,16 +21,18 @@ class ProductSerializer(serializers.ModelSerializer):
         # it will returna valid error
         fields = [
             'owner',
+            'pk',
             'url',
             'edit_url',
             'path',
             'endpoint',
-            'pk',
             'title',
+            'image',
             'slug',
             'body',
             'price',
             'discount',
+            'quantity',
             'public',
             'tags',
         ]

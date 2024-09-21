@@ -8,6 +8,7 @@ class ProductIndex(AlgoliaIndex):
     # should_index = 'is_public'
     fields = [
         'title',
+        'image',
         'body',
         'price',
         'public',
@@ -15,6 +16,7 @@ class ProductIndex(AlgoliaIndex):
         'user',
         'public',
         'path',
+        'quantity',
         'endpoint',
     ]
     tags='tag_name'
