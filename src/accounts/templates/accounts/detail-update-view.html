@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content%}
+<div class="px-16 py-6 bg-gray-100">
+  <header>
+    <h1 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Account Details</h1>
+  </header>
+  <div class="p-2">
+    <form method="POST" action="{% if action_url %}{{ action_url }}{% endif %}">{% csrf_token %}
+      {% if next_url %}
+          <input type="hidden" name="next" value="{{ next_url }}" />
+      {% endif %}
+      {{ form.as_p  }}
+      <label for="email">Email</label>
+      <input type="text" id="email" class="form-control" value="{{ request.user.email }}" disabled="disabled"><br/>
+      <button type="submit" class="my-3 btn btn-default">Save</button>
+      <a class="btn" href="{% url 'password_change' %}">Change Password</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

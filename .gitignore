@@ -20,6 +20,7 @@ sample search responce.json
 __pycache__/
 *.py[cod]
 *$py.class
+*.sqlite3
 
 # C extensions
 *.so

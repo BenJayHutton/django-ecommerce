@@ -43,10 +43,14 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     # project app
+    'accounts',
     'api',
     'products',
     'search',
+
 ]
+AUTH_USER_MODEL = 'accounts.User' #changes built-in user to ours
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

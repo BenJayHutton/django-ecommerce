@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content%}
+<main class="px-16 py-6 bg-gray-100 md:col-span-4">
+    <nav class="p-2">
+        <ul class="flex justify-around">
+            <li class="nav-item-b font-bold text-black" id="billing">
+                <h5>Billing</h5>
+            </li>
+
+            <li class="nav-item-b" id="history">
+                <h5>History</h5>
+            </li>
+
+            <li class="nav-item-b" id="library">
+                <span>Library</span>
+            </li>
+
+            <li class="nav-item-b" id="preference">
+                <span>Preferences</span>
+            </li>
+            {% if user.is_staff %}
+            <li class="nav-item-b" id="admin">
+                Admin
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+
+    <div class="pt-4" id="billingTab">
+        <div class="p-2">
+            <a class="block" href="#">Orders</a>
+            <a class="block" href="#">Library</a>
+            <a class="block" href="#">Addreess</a>
+        </div>
+    </div>
+
+    <div class="pt-4 hidden" id="historyTab">
+        <div class="p-2">
+            <a class="block" href="#">History</a>
+            <a class="block" href="#">Products Viewed</a>
+        </div>
+    </div>
+
+    <div class="pt-4 hidden" id="libraryTab">
+        <div class="p-2">
+            <a class="block" href="#">Digital library</a>
+        </div>
+    </div>
+
+    <div class="pt-4 hidden" id="preferenceTab">
+        <div class="p-2">
+        <a class="block" href="#">Edit Details</a>
+        <a class="block" href="#">Email Marketing</a>
+        <a class="block" href="#">Change Password</a>
+        </div>
+    </div>
+
+    {% if user.is_staff %}
+    <div class="pt-4 hidden" id="adminTab">
+        <div class="p-2">
+            <a class="block" href="#">Sales</a>
+        </div>
+
+        {% if user.is_admin %}
+        <div class="p-2">
+            <a class="block" href="#">Analytic Data</a>
+            <a class="block" href="">Manage Orders</a>
+            <a class="block" href="#">Manage Products</a>
+            <a class="block" href="#">Manage Billing profiles</a>
+            <a class="block" href="#">Manage Carts</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</main>
+{% endblock %}

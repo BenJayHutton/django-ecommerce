@@ -24,6 +24,7 @@ app_name = 'eCommerce'
 urlpatterns = [
     path('', DefaultHomePage.as_view(), name='home'),
     path('admin/', admin.site.urls),
+    path('accounts/', include('accounts.urls', namespace='accounts'), name='accounts'),
     path('api/', include('api.urls', namespace='api')),
     path('api/v2/', include('eCommerce.routers', namespace='api_v2')),
     path('product/', include('products.urls',namespace='product')),
