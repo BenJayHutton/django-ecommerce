@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/', include('api.urls', namespace='api')),
     path('api/v2/', include('eCommerce.routers', namespace='api_v2')),
     path('billing/', include(("billing.urls", "billing"), namespace='billing')),
+    path('blog/', include(("blog.urls", "blog"), namespace='blog')),
     path('product/', include('products.urls',namespace='product')),
     path('products/', include('products.urls', namespace='products'), name="products"),
     path('search/', include('search.urls', namespace='search')),

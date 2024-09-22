@@ -44,10 +44,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     # project app
     'accounts',
-    'billing',
     'api',
+    'billing',
+    'blog',
     'products',
     'search',
+    'tags',
 
 ]
 AUTH_USER_MODEL = 'accounts.User' #changes built-in user to ours

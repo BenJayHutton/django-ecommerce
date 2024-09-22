@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% block content %}
+<main class="px-16 py-6 bg-gray-100">
+  <header>
+    <h1 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Its a blog</h1>
+  </header>
+  <div class="mt-8 grid lg:grid-cols-3 gap-10">
+    {% if blog_obj %}
+      <div class='col-sm col-md col-lg my-3'>
+      {% for blog_obj in blog_obj %}
+      {{blog_obj.title}} <a href="{{ blog_obj.get_absolute_url }}">View</a><br>
+      <br>
+      {% endfor %}
+      </div>
+    {% else %}
+    <div class="col-sm col-md col-lg my-3">
+      No blog posts at the moment...
+    </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+    <div class="col-12">
+        <a href="{% url 'blog:create' %}"><button class="btn-success">Create blog</button></a>
+    </div>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

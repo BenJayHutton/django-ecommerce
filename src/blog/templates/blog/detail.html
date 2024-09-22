@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+        Title: {{object.title}} <br>
+Author: {{object.user.full_name}}<br>
+    </div>
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+        {{object.blog_post|safe|linebreaks}}<br>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+        <a href="{% url 'blog:home' %}"><< Back Home</a>
+    </div>
+
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+        <a href="{% url 'blog:update' object.slug %}"><button class="btn-success">Edit</button></a>
+        <a href="{% url 'blog:delete' object.slug %}"><button class="btn-danger">Delete</button></a>
+    </div>
+</div>
+{% endblock %}
