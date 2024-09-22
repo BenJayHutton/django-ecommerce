@@ -79,7 +79,6 @@ class ProductManager(models.Manager):
 
 
 
-
 class Product(models.Model):
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
     title = models.CharField(max_length=120)

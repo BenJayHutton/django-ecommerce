@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content%}
+
+<div class="col-10 col-md-6 mx-auto">
+  <h1>Add Payment method</h1>
+  <h5>--DEMO--</h5>
+  <div class='stripe-payment-form' data-token='{{publish_key}}' data-next-url='{% if next_url %} {{next_url}} {% endif %}' data-btn-title='Add New Card'></div>
+  <p>
+    Use demo card details <br>
+    card details: 4242424242424242<br>
+    exp: 12/29<br>
+    cvc: 222
+    zipcode: 22222<br>
+</p>
+</div>
+{% endblock %}
