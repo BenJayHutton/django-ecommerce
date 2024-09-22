@@ -17,8 +17,8 @@ from eCommerce.utils import unique_key_generator
 from random import randint
 
 DEFAULT_ACTIVATION_DAYS = getattr(settings, "DEFAULT_ACTIVATION_DAYS", 7)
-# verify_txt = get_template("registration/emails/verify.txt")
-# verify_html = get_template("registration/emails/verify.html")
+verify_txt = get_template("registration/emails/verify.txt")
+verify_html = get_template("registration/emails/verify.html")
 
 
 class UserManager(BaseUserManager):

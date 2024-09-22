@@ -1,0 +1,9 @@
+Hello {{ name }}
+
+Please activate your account for {{ email }} by clicking link below:
+
+{{ path }}
+
+Once activated, you can log in!
+
+Thank you eCommerce

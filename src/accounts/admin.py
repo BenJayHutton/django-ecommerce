@@ -16,7 +16,7 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('email', 'admin')
+    list_display = ('email','staff' ,'admin', 'is_active')
     list_filter = ('admin', 'staff', 'is_active')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
@@ -44,6 +44,8 @@ admin.site.unregister(Group)
 
 class EmailActivationAdmin(admin.ModelAdmin):
     search_fields = ['email']
+    list_display = ('email', 'activated', 'expires')
+    ordering = ('email',)
 
     class Meta:
         model = EmailActivation
@@ -54,6 +56,8 @@ admin.site.register(EmailActivation, EmailActivationAdmin)
 
 class GuestEmailAdmin(admin.ModelAdmin):
     search_fields = ['email']
+    list_display = ('email', 'active')
+    ordering = ('email',)
 
     class Meta:
         model = GuestEmail
