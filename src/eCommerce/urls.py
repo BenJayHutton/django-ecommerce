@@ -29,9 +29,11 @@ urlpatterns = [
     path('api/v2/', include('eCommerce.routers', namespace='api_v2')),
     path('billing/', include(("billing.urls", "billing"), namespace='billing')),
     path('blog/', include(("blog.urls", "blog"), namespace='blog')),
+    path('cart/', include(("carts.urls", "blog"), namespace='cart')),
     path('product/', include('products.urls',namespace='product')),
     path('products/', include('products.urls', namespace='products'), name="products"),
     path('search/', include('search.urls', namespace='search')),
+    path('shipping/', include('search.urls', namespace='shipping')),
 ]
 
 if settings.DEBUG:

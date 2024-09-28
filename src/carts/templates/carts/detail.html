@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Cart</h2>
+<div class="row">
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+
+    </div>
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+        User: {{object.user}}<br>
+        Items: {{object.cart_items}}<br>
+        Total: {{object.total}}<br>
+        Vat: {{object.vat}}<br>
+        Subtotal{{object.subtotal}}<br>
+        <p>
+            Meta Data: {{object.meta_data}}<br>
+        </p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+        <a href="{% url 'cart:home' %}"><< Back Home</a>
+    </div>
+
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+        <a href="{% url 'carts:update' object.pk %}"><button class="btn-success">Edit</button></a>
+        <a href="{% url 'carts:delete' object.pk %}"><button class="btn-danger">Delete</button></a>
+    </div>
+</div>
+{% endblock %}

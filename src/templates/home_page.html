@@ -7,11 +7,16 @@
     </header>
 
     <div>
-        <h4 class="font-bold mt-12 pb-2 border-b border-gray-200">Featured</h4>
-        <div class="mt-8 grid lg:grid-cols-3 gap-10" id="featured-products">
-            <!-- cards go here -->
+        {% if products_featured_obj %}
+        <div>
+            <h4 class="font-bold mt-12 pb-2 border-b border-gray-200">Featured</h4>
+            <div class="mt-8 grid lg:grid-cols-3 gap-10" id="featured-products">
+                {% for featured_item in products_featured_obj.all %}
+                {% include 'products/snippets/card.html' with product_obj=featured_item cart_item_obj=cart_item_obj %}
+                {% endfor %}
+            </div>
         </div>
-
+        {% endif %}
         <div class="mt-8" id="search-container">
         </div>
     </div>

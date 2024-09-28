@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="px-16 py-6 bg-gray-100">
+    <header>
+        <h1 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Orders</h1>
+    </header>
+
+    <div class="mt-8 grid lg:grid-cols-3 gap-10">
+        {% for object in object_list %}
+        <!-- Order Card -->
+        <div class="card hover:shadow-lg">
+            <div class="pt-4">Order ID: <a href="{{object.get_absolute_url }}">{{ object.order_id }}</a></div>
+            <div class="pt-4 px-1">Bought: </div>
+            <div class="px-1">Status: {{ object.get_status }}</div>
+            <div class="px-1">Total: {{ object.total }}</div>
+        </div>
+        {% empty %}
+        <div class="px-1">No orders yet</div>
+        {% endfor %}
+    </div>
+</main>
+
+{% endblock %}
+
+<div class="col-12">
+    <table class="table">
+        <thead><th>Order Id</th><th>Bought</th><th>Status</th><th>Total</th></thead>
+        <tbody>
+            {% for object in object_list %}
+                <tr>
+                    <td><a href="{{object.get_absolute_url }}">{{ object.order_id }}</a></td>
+                    <td>{{ object.timestamp }}</td>
+                    <td>{{ object.get_status }}</td>
+                    <td>{{ object.total }}</td>
+                </tr>
+            {% empty %}
+            <tr><td colspan="4"><p class="lead">No orders yet</p></td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

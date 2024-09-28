@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="px-16 py-6 bg-gray-100 table-responsive">
+  <header>
+    <h1 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Cart</h1>
+  </header>
+  {% if cart_obj.cart_items.exists %}
+  <div class="mt-8 grid lg:grid-cols-3 gap-10">
+    {% for cart_item in cart_obj.cart_items.all %}
+    <div class="border-b-2 border-gray-300 mb-4 cart-product" id="{{cart_item.id}}">
+      <form class="form-product-ajax" method="POST" action="{% url 'cart:update' %}" data-endpoint="{% url 'cart:update' %}" class="form">
+        {% csrf_token %}
+        <div>
+          <a href="{{ cart_item.product.get_absolute_url }}">{{ cart_item.product.title }}</a>
+
+          <div> 
+            <span>Quantity</span>
+            <input type="number" class="border border-red-200 rounded p-2 mb-2" name="product_quantity" value="{{ cart_item.quantity }}" min="0" max="{{cart_item.product.quantity}}">
+          </div>
+          
+          <div>
+            £ <span id="cart_item_price">{{ cart_item.total }}</span>
+          </div>
+          
+          <input type="hidden" name="cart_item_id" value="{{cart_item.id}}">
+          <input type="hidden" id="weight_in_grams" name="weight_in_grams" value="{{ cart_item.product.weight_in_grams}}">
+        </div>
+        <div class="mb-2 flex justify-normal">
+          <span>{% include 'carts/snippets/remove-cart-item.html' with cart_item=cart_item %}</span>
+          <span>{% include 'carts/snippets/update-cart-item.html' with cart_item=cart_item %}</span>
+        </div>
+      </form>
+    </div>
+    {% endfor %}
+    <div>
+      <div>
+        Total £ <span class="cart-total">{{ cart_obj.total }}</span>
+      </div>
+      <div>
+        Vat £ <span class="cart-vattotal">{{ cart_obj.vat }}</span>
+      </div>
+      <div>
+        Shipping £ <span class="cart-shipping">{{ cart_obj.shipping }}</span>
+      </div>
+      <div>
+        Subtotal £ <span class="cart-subtotal"> {{ cart_obj.subtotal }}</span>
+      </div>
+      <div>
+        <a class="btn" href="{% url 'cart:checkout' %}">checkout</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="mt-8">
+    <p class="m-2">
+      Basket is empty
+    </p>
+    <p class="m-2">
+      <a href="{% url 'products:list' %}" class="btn btn-success mb-2"> <i class="fa fa-chevron-left" aria-hidden="true"></i><i class="fa fa-chevron-left" aria-hidden="true"></i> Products</a>
+    </p>
+    
+  </div>
+  {% endif %}
+</main>
+{% endblock %}

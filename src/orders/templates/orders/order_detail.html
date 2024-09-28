@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="px-16 py-6 bg-gray-100">
+    <nav class="pb-2">
+        <a href="{% url 'orders:list' %}" class="btn"> << Your Orders</a>
+    </nav>
+    <div>
+        <p>Order {{ object.order_id }}</p>
+        <p>Items: {% for cart_item in object.cart.cart_items.all %}{{cart_item.product}}{% if not forloop.last %}, {% endif %}{% endfor %} </p>
+        <p>Shipping address {{ object.shipping_address.get_address}}</p>
+        <p>Billing address {{ object.shipping_address.get_address}}</p>
+        <p>Cart Total: £{{ object.cart.total}}</p>
+        <p>Vat Total: £{{ object.cart.vat}}</p>
+        <p>Shipping Total: £{{ object.shipping_total}}</p>
+        <p>Order Total: £{{ object.total}}</p>
+        <p>Order Status: {{ object.get_status}}</p>
+        <form class="p-2" method="post" action="{% url 'orders:confirmation' %}">
+            {% csrf_token %}
+            <input type="hidden" name="order_id" value="{{ object.order_id }}">
+            <input class="btn" type="submit" value="Email receipt">
+        </form>
+    </div>
+    {% if user.is_admin %}
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+    <a href="{% url 'orders:update' object.id %}"><button class="btn">Edit</button></a>
+    <a href="{% url 'orders:delete' object.id %}"><button class="btn">Delete</button></a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

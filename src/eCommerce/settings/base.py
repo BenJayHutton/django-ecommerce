@@ -45,10 +45,15 @@ INSTALLED_APPS = [
     # project app
     'accounts',
     'api',
+    'addresses',
     'billing',
     'blog',
+    'carts',
+    'orders',
+    'payment',
     'products',
     'search',
+    'shipping',
     'tags',
 
 ]
