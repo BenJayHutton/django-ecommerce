@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Orders</h1>
+
+<div class="row">
+    <div class="col-8">
+        {% include 'analytics/snippets/search-form.html' with placeholder="search orders" %}
+    </div>
+</div>
+<div class="row">
+    <div class="col-6" id="sales-orders">
+        <h3>Orders</h3>
+    </div>
+    <div class="col-6" id="sales-to-ship">
+        <h3>To Ship</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6" id="products">
+        <h3>Products</h3>
+        <a href="{% url 'orders:create' %}">Create Order</a>
+    </div>
+</div>
+{% endblock %}

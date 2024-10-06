@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Analytics</h1>
+
+{% for obj in object_list %}
+<p>
+    User: {{ obj.user }} <br>
+    Ip Address: {{ obj.ip_address }} <br>
+    Object Viewed: {{ obj.content_object }}<br>
+</p>
+
+{% endfor %}
+{% endblock %}

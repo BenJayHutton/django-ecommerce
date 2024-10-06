@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row my-5">
+    <div class="col-12 text-center">
+        <h1>Sales</h1>
+        <hr>
+    </div>
+</div>
+<!-- Today's Sales -->
+<div class="row my-4">    
+    <div class="col-4">
+        <h2>Today's Sales</h2>
+        <hr>
+        <p>Order Totals: £{% if today.recent_data.total__sum %}{{today.recent_data.total__sum}}{% else %}0 {% endif %}</p>
+        <ol>
+        {% for order in today.recent|slice:":5" %}
+        <li class="my-3">
+            #{{order.order_id}} <br>
+            £{{order.total}} <br>
+            Ordered: {{order.updated|timesince}} ago
+        </li>
+        {% endfor %}
+        </ol>
+        <!-- This Weeks Sales -->
+        <h2>This week</h2>
+        <hr>
+        <p>Order Totals: £{% if this_week.recent_data.total__sum %}{{this_week.recent_data.total__sum}}{% else %}0 {% endif %}</p>
+        <ol>
+        {% for order in this_week.recent %}
+        <li class="my-3">
+            #{{order.order_id}} <br>
+            £{{order.total}} <br>
+            Ordered: {{order.updated|timesince}} ago
+        </li>
+        {% endfor %}
+        </ol>
+    </div>
+    <div class="col">
+        <canvas class="bjh-render-chart" id="thisWeekSales" data-type="week"></canvas>
+    </div>
+</div>
+<!-- last Month's Sales -->
+<div class="row my-3">
+    <div class="col-4">
+        <h2>Last 4 Weeks</h2>
+        <hr>
+        <p>Month Totals: £{{last_four_weeks.recent_data.total__sum}}</p> 
+        <p>Shipped Total: £{{last_four_weeks.shipped_data.total__sum}}</p>
+        <p>Paid Totals: £{{ last_four_weeks.paid_data.total__sum }}</p>
+    </div>
+
+    <div class="col">
+        <canvas class="bjh-render-chart" id="fourWeekSales" data-type="4weeks"></canvas>
+    </div>
+  </div>
+{% endblock %}

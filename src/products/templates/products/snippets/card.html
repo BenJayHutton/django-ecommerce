@@ -1,0 +1,26 @@
+<div class="card hover:shadow-lg">
+    {% if counter %}
+    <div class="absolute right-0 px-2">
+      # {{counter}}
+    </div>
+    {% endif %}
+    <a href="{{ product_obj.get_absolute_url }}" class="p-1">
+      <img src="{{product_obj.image.url}}" alt="{{ product_obj.title}} logo" class="w-full h-12 sm:h-48 object-cover">
+    </a>
+    
+    <div class="p-4">
+      <span class="font-bold text-gray-500 text-sm">{{ product_obj.title }}</span>
+    </div>
+  
+    <div class="badge">
+      <span> {% if product_obj.quantity > 10 %} 10+ {% else %} {{product_obj.quantity}} {% endif %} available</span>
+    </div>
+  
+    <div class="bottom-0 m-1">
+      £ {{product_obj.price}}
+    </div>
+  
+    <div class="p-1">
+        {% include 'products/snippets/update-cart.html' with product_obj=product_obj cart_item_obj=cart_item_obj cart_obj=cart_obj  %}
+    </div>
+  </div>

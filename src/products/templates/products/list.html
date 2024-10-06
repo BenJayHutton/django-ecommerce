@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 {% block content%}
-<h2>List Product View</h2>
-<div>
-    {% for product in product_list %}
-    <div>
-        {{product}}
-    </div>
-    {% endfor %}
-</div>
+<main class="px-16 py-6 bg-gray-100">
+  <header>
+    <h1 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Shop</h1>
+  </header>
 
+  <div>
+    <div class="mt-8 grid lg:grid-cols-3 gap-10">
+      {% for product in product_list %}
+        {% include 'products/snippets/card.html' with product_obj=product cart_item_obj=cart_item_obj %}
+      {% endfor %}
+    </div>
+  </div>
+</main>
 {% endblock %}

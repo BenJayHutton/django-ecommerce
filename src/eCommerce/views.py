@@ -8,12 +8,14 @@ class DefaultHomePage(TemplateView):
     display_name = "home"
     model = Product
     tags_obj = Tag
+    products_featured_obj = model.objects.filter(featured=True)
     
     def get(self, request):
         context = {
                 "title": "Home Page",
                 "content": "Welcome to the home page",
                 "description": "Buy high-quality products ranging from books to apparel",
+                'products_featured_obj': self.products_featured_obj,
             }
         return render(request, "home_page.html", context)
 

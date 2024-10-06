@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="px-16 py-6 bg-gray-100">
+    <form class="w-full max-w-lg" action="." method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="grid grid-cols-2 gap-5">
+            <div>
+                <div class="p-2">
+                    <H3>Title</H3>
+                    {{form.title}}
+                </div>
+                <div class="p-2">
+                    <h3>Price</h3>
+                    {{form.price}}
+                </div>
+                <div class="p-2">
+                    <h3>Image</h3>
+                    {{form.image}}
+                </div>
+                <div class="p-2">
+                    <h3>Featured</h3>
+                    {{form.featured}}
+                </div>
+                <div class="p-2">
+                    <h3>Quantity</h3>
+                    {{form.quantity}}
+                </div>
+                <div class="p-2">
+                    <h3>Weight</h3>
+                    {{form.weight_in_grams}}
+                </div>
+                <div class="p-2">
+                    <h3>Is Active</h3>
+                    {{form.active}}
+                </div>
+            </div>
+            <div>
+                <div class="p-2">
+                    <h3>Description</h3>
+                    {{form.description}}
+                </div>
+                <div class="p-2">
+                    <h3>Tags</h3>
+                    {{form.tags}}
+                </div>
+                <div class="p-2">
+                    <h3>Is Digital</h3>
+                    {{form.is_digital}}
+                </div>
+            </div>
+        </div>
+        <div class="p-4">
+            <input type="submit" value="Save" class="btn-success"/>
+            {% if object %}
+            <a href="{{object.get_absolute_url}}"><button class="btn-danger">Back</button></a>
+        </div>
+       
+        {% endif %}
+    </form>
+</main>
+{% endblock %}

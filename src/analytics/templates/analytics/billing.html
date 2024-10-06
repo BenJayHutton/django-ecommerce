@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="px-16 py-6 bg-gray-100">
+    <div>
+        {% include 'analytics/snippets/search-form.html' with placeholder="search billing details" %}
+    </div>
+    
+    <div id="billing">
+        <h3>Billing</h3>
+    </div>
+</div>
+{% endblock %}

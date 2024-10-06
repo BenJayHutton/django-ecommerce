@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.shortcuts import reverse
 
 from tags.models import Tag
 
@@ -75,7 +76,7 @@ class Product(models.Model):
     objects = ProductManager()
 
     def get_absolute_url(self):
-        return f"/product/{self.pk}/"
+        return reverse("product:detail", kwargs={"slug": self.slug})
 
     @property
     def endpoint(self):
