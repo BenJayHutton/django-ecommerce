@@ -49,12 +49,15 @@ INSTALLED_APPS = [
     'billing',
     'blog',
     'carts',
+    'django_browser_reload',
     'orders',
     'payment',
     'products',
     'search',
     'shipping',
     'tags',
+    'tailwind',
+    'theme',
 
 ]
 AUTH_USER_MODEL = 'accounts.User' #changes built-in user to ours
@@ -69,6 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 
 ROOT_URLCONF = 'eCommerce.urls'
@@ -154,3 +158,9 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
+
+INTERNAL_IPS = [
+    "127.0.0.1:8000",
+    "localhost:8000"
+]
+TAILWIND_APP_NAME = 'theme'

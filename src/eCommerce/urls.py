@@ -34,8 +34,9 @@ urlpatterns = [
     path('products/', include('products.urls', namespace='products'), name="products"),
     path('search/', include('search.urls', namespace='search')),
     path('shipping/', include('search.urls', namespace='shipping')),
+    path("__reload__/", include("django_browser_reload.urls")),
 ]
 
 if settings.DEBUG:
     from django.conf.urls.static import static
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

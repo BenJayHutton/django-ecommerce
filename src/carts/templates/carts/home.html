@@ -45,9 +45,9 @@
       <div>
         Subtotal £ <span class="cart-subtotal"> {{ cart_obj.subtotal }}</span>
       </div>
-      <div>
-        <a class="btn" href="{% url 'cart:checkout' %}">checkout</a>
-      </div>
+      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" >
+        <a href="{% url 'cart:checkout' %}">checkout</a>
+      </button>
     </div>
   </div>
   {% else %}

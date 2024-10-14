@@ -87,6 +87,7 @@ class GuestRegisterView(NextUrlMixin, RequestFormAttachMixin, CreateView):
     default_next = '/register/'
 
     def get_success_url(self):
+        print("Guest get next url", self.get_next_url())
         return self.get_next_url()
 
     def form_invalid(self, form):

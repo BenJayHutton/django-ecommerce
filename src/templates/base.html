@@ -1,4 +1,4 @@
-{% load static %}<!DOCTYPE html>
+{% load static %}{% load static tailwind_tags %}<!DOCTYPE html>
 <html lang="en">
     <head>
         <title>{{ title }}</title>
@@ -7,6 +7,7 @@
         <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="{{description}}">
+        {% tailwind_css %}
         {% include 'base/css.html' %}
     </head>
     <body class="text-gray-700 font-mono">
@@ -35,7 +36,7 @@
         </div>
 
         <footer class="fixed bottom-1">
-            Copyright 2024
+            Copyright 2024-
         </footer>
         {% include 'base/js.html' %}
         {% block javascript %}{%endblock %}

@@ -187,3 +187,33 @@ class ProductDetailSlugView(ObjectViewedMixin, DetailView):
         except BaseException:
             raise Http404("Product not found")
         return instance
+
+
+class UserProductHistoryView(LoginRequiredMixin, ListView):
+    template_name = "products/user-history.html"
+
+    def get_context_data(self, *args, **kwargs):
+        request = self.request
+        context = super(
+            UserProductHistoryView,
+            self).get_context_data(
+            *
+            args,
+            **kwargs)
+        cart_obj, new_obj = Cart.objects.new_or_get(request)
+        cart_item_id = {}
+        context['cart_obj'] = cart_obj
+        context['cart_item_id'] = cart_item_id
+        cart_item_obj = []
+        for items in cart_obj.cart_items.all():
+            cart_item_obj.append(items.product)
+            cart_item_id[items.product] = int(items.id)
+        context['cart_item_obj'] = cart_item_obj
+        context['title'] = 'History'
+        return context
+
+    def get_queryset(self, *args, **kwargs):
+        request = self.request
+        views = request.user.objectviewed_set.by_model(
+            Product, model_queryset=False)
+        return views
