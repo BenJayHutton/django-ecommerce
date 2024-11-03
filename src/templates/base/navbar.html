@@ -35,7 +35,7 @@
         </li>
         
         <li class="text-gray-500 font font-bold py-1">
-          <a class="px-4 nav-item-r" href="#">
+          <a class="px-4 nav-item-r" href="{% url 'contact' %}">
             <span>Contact</span>
           </a>
         </li>
@@ -47,13 +47,13 @@
         </li>
   
         <li class="text-gray-500 font font-bold py-1">
-          <a class="px-4 nav-item-r" href="#">
+          <a class="px-4 nav-item-r" href="{% url 'about' %}">
             <span>About</span>
           </a>
         </li>
         
         <li class="text-gray-500 font font-bold py-1">
-          <a class="px-4 nav-item-r" href="#">
+          <a class="px-4 nav-item-r" href="{% url 'cart:home' %}">
             <span class='navbar-cart-count m-1'>{{ request.session.cart_item_count }}</span> Cart
           </a>
         </li>

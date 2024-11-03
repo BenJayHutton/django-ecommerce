@@ -17,12 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.conf import settings
 from django.urls import include, path
-from .views import DefaultHomePage
+from .views import about_page, contact_page, DefaultHomePage
 
 app_name = 'eCommerce'
 
 urlpatterns = [
     path('', DefaultHomePage.as_view(), name='home'),
+    path('about/', about_page, name='about'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls', namespace='accounts'), name='accounts'),
     path('api/', include('api.urls', namespace='api')),
@@ -30,6 +31,7 @@ urlpatterns = [
     path('billing/', include(("billing.urls", "billing"), namespace='billing')),
     path('blog/', include(("blog.urls", "blog"), namespace='blog')),
     path('cart/', include(("carts.urls", "blog"), namespace='cart')),
+    path('contact/', contact_page, name='contact'),
     path('product/', include('products.urls',namespace='product')),
     path('products/', include('products.urls', namespace='products'), name="products"),
     path('search/', include('search.urls', namespace='search')),
