@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'blog',
     'carts',
     'django_browser_reload',
+    'marketing',
     'orders',
     'payment',
     'products',
