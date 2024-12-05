@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
@@ -57,13 +58,24 @@ class ProductManager(models.Manager):
 
 
 class Product(models.Model):
+    STANDARD_RATE = Decimal('0.20')
+    REDUCED_RATE = Decimal('0.05')
+    ZERO_RATE = Decimal('0.00')
+
+    VAT_RATE = [
+        (STANDARD_RATE,"Standard Rate 20%"),
+        (REDUCED_RATE,"Reduced Rate 5%"),
+        (ZERO_RATE,"Zero Rate 0%")
+    ]
+    
     user = models.ForeignKey(User, default=1, null=True, on_delete=models.SET_NULL)
     title = models.CharField(max_length=120)
     slug = models.SlugField(blank=True, unique=True)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(default='products/150x150.png', upload_to='products/', null=True, blank=True)
-    price = models.FloatField(default=0.00, max_length=2)
-    vat = models.FloatField(default=0.00, max_length=2)
+    price = models.DecimalField(default=0, max_digits=10, decimal_places=2)
+    vat_rate = models.DecimalField(max_digits=3, decimal_places=2, choices=VAT_RATE)
+    vat = models.DecimalField(default=0, max_digits=10, decimal_places=2)
     quantity = models.IntegerField(default=0)
     weight_in_grams = models.FloatField(default=0.00, max_length=2)
     active = models.BooleanField(default=True)

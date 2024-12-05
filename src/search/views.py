@@ -7,8 +7,6 @@ from products.serializers import ProductSerializer
 from rest_framework import generics
 from rest_framework.response import Response
 
-from . import client
-
 class SearchApiProductView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         user = None
@@ -19,7 +17,7 @@ class SearchApiProductView(generics.GenericAPIView):
         tags = request.GET.get('tags') or None
         if not query:
             return Response('', status=400)
-        results = client.perform_search(query, tags=tags, user=user, public=public)
+        results = None
         return Response(results)
 
 class OldSearchApiProductView(generics.ListAPIView):

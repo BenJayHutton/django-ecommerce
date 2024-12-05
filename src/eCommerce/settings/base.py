@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     #Third party packages
-    'algoliasearch_django',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
@@ -63,7 +62,6 @@ INSTALLED_APPS = [
     'tags',
     'tailwind',
     'theme',
-
 ]
 AUTH_USER_MODEL = 'accounts.User' #changes built-in user to ours
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
