@@ -23,7 +23,6 @@ def object_viewed_receiver(sender, instance, request, *args, **kwargs):
         ip_address=get_client_ip(request),
     )
 
-
 object_viewed_signal.connect(object_viewed_receiver)
 
 
@@ -39,10 +38,9 @@ def post_save_session_receiver(sender, instance, created, *args, **kwargs):
     if not instance.active and not instance.ended:
         instance.end_session()
 
-
 post_save.connect(post_save_session_receiver, sender=UserSession)
 
-@receiver(request_finished)
+#@receiver(request_finished)
 def user_logged_in_receiver(sender, instance, request, *args, **kwargs):
     user = instance
     ip_address = get_client_ip(request)
@@ -52,3 +50,4 @@ def user_logged_in_receiver(sender, instance, request, *args, **kwargs):
         ip_address=ip_address,
         session_key=session_key,
     )
+user_logged_in.connect(user_logged_in_receiver)
