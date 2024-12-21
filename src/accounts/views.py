@@ -12,6 +12,7 @@ from eCommerce.mixins import NextUrlMixin, RequestFormAttachMixin
 from .forms import LoginForm, RegisterForm, GuestForm, ReactivateEmailForm, UserDetailChangeForm
 from .models import EmailActivation
 
+
 class Accounts(LoginRequiredMixin, DetailView):
     template_name = 'accounts/home.html'
 
@@ -24,7 +25,8 @@ class Accounts(LoginRequiredMixin, DetailView):
 
     def get_object(self):
         return self.request.user
-    
+
+
 class AccountEmailActivateView(FormMixin, View):
     success_url = '/'
     form_class = ReactivateEmailForm
@@ -87,7 +89,6 @@ class GuestRegisterView(NextUrlMixin, RequestFormAttachMixin, CreateView):
     default_next = '/register/'
 
     def get_success_url(self):
-        print("Guest get next url", self.get_next_url())
         return self.get_next_url()
 
     def form_invalid(self, form):

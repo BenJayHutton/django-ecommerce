@@ -16,9 +16,17 @@ from addresses.forms import AddressForm
 from addresses.models import Address
 from billing.models import BillingProfile
 from orders.models import Order
+from payment.views import StripeCharge
 from products.models import Product
+from shipping.views import RoyalMail
 from .models import Cart, CartItem
 from .forms import CartForm, CartItemForm
+
+import json
+import stripe
+import os
+
+STRIPE_PUB_KEY = getattr(settings, "STRIPE_PUB_KEY", None)
 
 
 class CartCreateView(LoginRequiredMixin, CreateView):
@@ -280,6 +288,7 @@ def checkout_home(request, *args, **kwargs):
         "address_form": address_form,
         "address_qs": address_qs,
         "has_card": has_card,
+        "publish_key": STRIPE_PUB_KEY,
         "shipping_address_required": shipping_address_required,
     }
     return render(request, "carts/checkout.html", context)

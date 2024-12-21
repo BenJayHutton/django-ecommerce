@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Conformation</title>
+    <style>
+        .bg-gray-100 {
+            --tw-bg-opacity: 1;
+            background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+        }
+        .text-gray-500 {
+            --tw-text-opacity: 1;
+            color: rgb(107 114 128 / var(--tw-text-opacity));
+        }
+        .text-gray-400 {
+            --tw-text-opacity: 1;
+            color: rgb(156 163 175 / var(--tw-text-opacity));
+        }
+        .border-gray-200 {
+            --tw-border-opacity: 1;
+            border-color: rgb(229 231 235 / var(--tw-border-opacity));
+        }
+        .font-bold {
+            font-weight: 700;
+        }
+        .p-1 {
+            padding: 0.25rem/* 4px */;
+        }
+        .py-6 {
+            padding-top: 1.5rem/* 24px */;
+            padding-bottom: 1.5rem/* 24px */;
+        }
+        .px-16 {
+            padding-left: 4rem/* 64px */;
+            padding-right: 4rem/* 64px */;
+        }
+        .text-xl {
+            font-size: 1.25rem/* 20px */;
+            line-height: 1.75rem/* 28px */;
+        }
+        .font-semibold {
+            font-weight: 600;
+        }
+        .border-b {
+            border-bottom-width: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="px-16 py-6 bg-gray-100 text-gray-500">
+        <header class="text-xl font-semibold border-b border-gray-200">
+            <p>Thank you very much</p>
+            <p> Order No: {{ order_id }}</p>
+        </header>
+        <div class="p-1 font-bold">
+            Hello {{ name }} <br>
+        </div>
+        <div class="p-1 font-bold">
+            Your order has now been shipped and should arrive in the next 2-3 days<br>
+            If you have any queries, please contact us at shop@SweetSweetSwag.com <br>
+            quoting your order number
+        </div>
+    
+        <div class="p-1 font-bold">
+            Thank you <a href="http://www.SweetSweetSwag.com{{ order_id}}">SweetSweetSwag</a>
+        </div>
+    </div>
+</body>
+</html>

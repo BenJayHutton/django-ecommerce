@@ -1,4 +1,3 @@
-# Create your models here.
 from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import (
@@ -8,8 +7,11 @@ from django.core.mail import send_mail
 from django.template.loader import get_template
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import pre_save, post_save
 from django.urls import reverse
 from django.utils import timezone
+
+from eCommerce.utils import unique_key_generator
 
 from random import randint
 
@@ -180,7 +182,7 @@ class EmailActivation(models.Model):
             if self.key:
                 base_url = getattr(settings, 'BASE_URL', None)
                 key_path = reverse(
-                    "accounts:email-activate",
+                    "account:email-activate",
                     kwargs={
                         'key': self.key})
                 path = "{base}{path}".format(base=base_url, path=key_path)
@@ -207,6 +209,25 @@ class EmailActivation(models.Model):
         return False
 
 
+def pre_save_email_activation(sender, instance, *args, **kwargs):
+    if not instance.activated and not instance.forced_expired:
+        if not instance.key:
+            instance.key = unique_key_generator(instance)
+
+
+pre_save.connect(pre_save_email_activation, sender=EmailActivation)
+
+
+def post_save_email_activation(sender, instance, created, *args, **kwargs):
+    if created:
+        obj = EmailActivation.objects.create(
+            user=instance, email=instance.email)
+        obj.send_activation_email()
+
+
+post_save.connect(post_save_email_activation, sender=User)
+
+
 class GuestEmail(models.Model):
     email = models.EmailField()
     active = models.BooleanField(default=True)
@@ -215,4 +236,3 @@ class GuestEmail(models.Model):
 
     def __str__(self):
         return self.email
-    

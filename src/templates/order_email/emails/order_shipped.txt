@@ -1,0 +1,8 @@
+Hello {{ name }}
+
+Your order{{ order_id }} has been shipped<br>
+It will arrive in the next 2-3 days<br>
+If you have any queries, please get in contact with us at cs@SweetSweetSwag.com
+quoting your order number
+
+Thank you SweetSweetSwag

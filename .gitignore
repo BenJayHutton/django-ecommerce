@@ -17,6 +17,8 @@ creds.json
 sample search responce.json
 theme/
 node_modules/
+_accounts/
+_payment/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

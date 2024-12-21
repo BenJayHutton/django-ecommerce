@@ -17,7 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.conf import settings
 from django.urls import include, path
+
 from .views import about_page, contact_page, DefaultHomePage
+
+from addresses import views #checkout_address_create_view, checkout_address_reuse_view
 
 app_name = 'eCommerce'
 
@@ -31,8 +34,11 @@ urlpatterns = [
     path('billing/', include(("billing.urls", "billing"), namespace='billing')),
     path('blog/', include(("blog.urls", "blog"), namespace='blog')),
     path('cart/', include(("carts.urls", "blog"), namespace='cart')),
+    path('checkout/address/create/', views.checkout_address_create_view, name='checkout_address_create'),
+    path('checkout/address/reuse/', views.checkout_address_reuse_view, name='checkout_address_reuse'),
     path('contact/', contact_page, name='contact'),
     path('marketing/', include(("marketing.urls", "marketing"), namespace='marketing')),
+    path('payment/', include(("payment.urls", "payment"), namespace='payment')),
     path('product/', include('products.urls',namespace='product')),
     path('products/', include('products.urls', namespace='products'), name="products"),
     path('search/', include('search.urls', namespace='search')),

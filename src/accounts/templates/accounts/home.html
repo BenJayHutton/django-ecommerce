@@ -30,49 +30,51 @@
 
     <div class="pt-4" id="billingTab">
         <div class="p-2">
-            <a class="block" href="#">Orders</a>
-            <a class="block" href="#">Library</a>
+            <a class="block" href="{% url 'orders:list' %}">Orders</a>
+            <a class="block" href="{% url 'library' %}">Library</a>
             <a class="block" href="#">Addreess</a>
         </div>
     </div>
 
     <div class="pt-4 hidden" id="historyTab">
         <div class="p-2">
-            <a class="block" href="#">History</a>
-            <a class="block" href="#">Products Viewed</a>
+            <a class="block" href="{% url 'account:user-product-history' %}">History</a>
+            <a class="block" href="{% url 'account:user-product-history' %}">Products Viewed</a>
         </div>
     </div>
 
     <div class="pt-4 hidden" id="libraryTab">
         <div class="p-2">
-            <a class="block" href="#">Digital library</a>
+            <a class="block" href="{% url 'library' %}">Digital library</a>
         </div>
     </div>
 
     <div class="pt-4 hidden" id="preferenceTab">
         <div class="p-2">
-        <a class="block" href="#">Edit Details</a>
-        <a class="block" href="#">Email Marketing</a>
-        <a class="block" href="#">Change Password</a>
+        <a class="block" href="{% url 'account:user-update' %}">Edit Details</a>
+        <a class="block" href="{% url 'marketing:marketing-pref' %}">Email Marketing</a>
+        <a class="block" href="{% url 'password_change' %}">Change Password</a>
         </div>
     </div>
 
     {% if user.is_staff %}
     <div class="pt-4 hidden" id="adminTab">
         <div class="p-2">
-            <a class="block" href="#">Sales</a>
+            <a class="block" href="{% url 'analytics:sales-analytics' %}">Sales</a>
         </div>
 
         {% if user.is_admin %}
         <div class="p-2">
-            <a class="block" href="#">Analytic Data</a>
-            <a class="block" href="">Manage Orders</a>
-            <a class="block" href="#">Manage Products</a>
-            <a class="block" href="#">Manage Billing profiles</a>
-            <a class="block" href="#">Manage Carts</a>
+            <a class="block" href="{% url 'analytics:analytics-data' %}">Analytic Data</a>
+            <a class="block" href="{% url 'analytics:orders' %}">Manage Orders</a>
+            <a class="block" href="{% url 'analytics:products' %}">Manage Products</a>
+            <a class="block" href="{% url 'analytics:billing-profiles' %}">Manage Billing profiles</a>
+            <a class="block" href="{% url 'analytics:carts' %}">Manage Carts</a>
         </div>
         {% endif %}
     </div>
     {% endif %}
 </main>
+<!-- Tailwind JS -->
+<script src="{% static 'js/tailwind.js' %}"></script>
 {% endblock %}

@@ -1,0 +1,13 @@
+Hello {{ name }}
+
+Thank you for your order,<br>
+If you have any queries, please get in contact with us at shop@SweetSweetSwag.com
+quoting your order number {{ order_id }}
+
+{{ cus_items }}
+
+tax: {{order_tax}}
+shipping: {{order_shipping}}
+total: {{order_total}}
+
+Thank you SweetSweetSwag
