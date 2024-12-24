@@ -4,4 +4,5 @@ My intention is to make the project as general and self contained as possible
 
 # Requirements
 Python 3.10 or higher  
-Django 5  
+Django 5
+Aws 
