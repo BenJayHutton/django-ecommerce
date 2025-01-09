@@ -10,6 +10,8 @@ from .views import (
     ProductView,
 )
 
+app_name = 'analytics'
+
 urlpatterns = [
     path('orders/', CartView.as_view(), name='carts'),
     path('orders/', OrderView.as_view(), name='orders'),
