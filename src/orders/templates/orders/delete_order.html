@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-<form action="." method="post">
-    {% csrf_token %}
-    <h3>Do you want to delete "{{object.title}}"</h3>
-    <input type="submit" value="Yes" /><a href="#">Cancel</a>
-</form>
+<div class="px-16 py-6 bg-gray-100">
+    <form action="." method="post">
+        {% csrf_token %}
+        <h3>Do you want to delete "{{object.title}}"</h3>
+        <label class="text-gray-700 text-sm font-bold mb-2" for="delete">Delete</label>
+        <input  type="submit" value="Yes" />
+        <a href="#">Cancel</a>
+    </form>
+</div>
 {% endblock %}

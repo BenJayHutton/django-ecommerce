@@ -84,6 +84,7 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
         qs = Order.objects.by_request(
             self.request).filter(
             order_id=self.kwargs.get('order_id'))
+        print(qs)
         if qs.count() == 1:
             return qs.first()
         raise Http404

@@ -78,7 +78,8 @@ class CartItem(models.Model):
     objects = CartItemManager()
 
     def __str__(self):
-        return str(self.id)
+        to_return = "Cart basket: " + str(self.id) + " - " + self.product.title
+        return to_return
 
 
 class CartManager(models.Manager):
