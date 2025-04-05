@@ -8,7 +8,18 @@ class OrderForm(forms.ModelForm):
     class Meta:
         now = datetime.datetime.now().date()
         model = Order
-        fields = ['billing_profile','order_id','shipping_address','cart','status','shipping_total','tax','total','active','meta_data']
+        fields = [
+            'billing_profile',
+            'order_id',
+            'shipping_address',
+            'cart',
+            'status',
+            'shipping_total',
+            'tax',
+            'total',
+            'active',
+            'meta_data'
+            ]
         widgets = {}
 
 

@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
                 ('is_digital', models.BooleanField(default=False)),
                 ('weight_in_grams', models.FloatField(default=0.0, max_length=2)),
                 ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('tags', models.ManyToManyField(blank=True, to='products.tag')),
+                ('tags', models.ManyToManyField(blank=True, to='tags.tag')),
             ],
         ),
     ]
