@@ -227,10 +227,10 @@ class Order(models.Model):
         max_length=120,
         default='created',
         choices=ORDER_STATUS_CHOICES)
-    total = models.FloatField(default=0.00, max_length=2)
-    tax = models.FloatField(default=0.00, max_length=2)
-    shipping_total = models.FloatField(default=0.00, max_length=2)
-    sub_total = models.FloatField(default=0.00, max_length=2)
+    total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    tax = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    shipping_total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    sub_total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
     active = models.BooleanField(default=True)
     meta_data = models.TextField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)

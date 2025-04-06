@@ -4,6 +4,7 @@ from django.db.models import Sum
 from django.db.models.signals import pre_save, post_save, m2m_changed
 from products.models import Product
 from django.urls import reverse
+import decimal
 
 from shipping.views import RoyalMail
 
@@ -65,13 +66,13 @@ class CartItem(models.Model):
         blank=True,
         on_delete=models.SET_NULL)
     quantity = models.IntegerField(default=None, null=True)
-    price_of_item = models.FloatField(default=0.00, max_length=2)
+    price_of_item = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
     session_id = models.CharField(
         max_length=120,
         default=0,
         null=True,
         blank=True)
-    total = models.FloatField(default=0.00, max_length=2)
+    total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
     weight_in_grams = models.FloatField(null=True, blank=True, default=0.00, max_length=2)
     meta_data = models.TextField(null=True, blank=True)
 
@@ -108,13 +109,13 @@ class CartManager(models.Manager):
 
     def calculate_cart_total(self, *args, **kwargs):
         cart_obj = kwargs.get("cart_obj", None)
-        total = 0
-        vat = 0
-        sub_total = 0
+        total = decimal(0)
+        vat = decimal(0)
+        sub_total = decimal(0)
         shipping_cost = cart_obj.shipping
         for x in cart_obj.cart_items.all():
             total += x.total
-        vat = round(total * 0.2, 2)
+        vat = total * 0.2
         if vat < 0.01:
             vat = 0
         sub_total = round(total + vat + shipping_cost, 2)
@@ -134,10 +135,10 @@ class Cart(models.Model):
         blank=True,
         on_delete=models.SET_NULL)
     cart_items = models.ManyToManyField(CartItem, default=None, blank=True)
-    total = models.FloatField(default=0.00, max_length=2)
-    vat = models.FloatField(default=0.00, max_length=2)
-    shipping = models.FloatField(default=0.00, max_length=2)
-    subtotal = models.FloatField(default=0.00, max_length=2)
+    total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    vat = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    shipping = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    subtotal = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
     weight_in_grams = models.FloatField(null=True, blank=True, default=0.00, max_length=2)
     meta_data = models.TextField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
