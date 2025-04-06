@@ -42,7 +42,7 @@ class AccountEmailActivateView(FormMixin, View):
                 obj.activate()
                 messages.success(
                     request, "your email has been confirmed, please login.")
-                return redirect("account:login")
+                return redirect("accounts:login")
             else:
                 activated_qs = qs.filter(activated=True)
                 if activated_qs.exists():
@@ -51,7 +51,7 @@ class AccountEmailActivateView(FormMixin, View):
                     Do you need to <a href="{link}">reset your password?</a>
                     """.format(link=reset_link)
                     messages.success(request, mark_safe(msg))
-                    return redirect("account:login")
+                    return redirect("accounts:login")
         context = {
             'form': self.get_form(),
             'key': key,
@@ -109,7 +109,7 @@ class LoginView(NextUrlMixin, RequestFormAttachMixin, FormView):
 class RegisterView(CreateView):
     form_class = RegisterForm
     template_name = 'accounts/register.html'
-    success_url = reverse_lazy('account:login')
+    success_url = reverse_lazy('accounts:login')
 
 
 class UserDetailUpdateView(LoginRequiredMixin, UpdateView):
@@ -130,9 +130,9 @@ class UserDetailUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        return reverse("account:home")
+        return reverse("accounts:home")
 
 
 def logout_view(request):
     logout(request)
-    return redirect("account:login")
+    return redirect("accounts:login")

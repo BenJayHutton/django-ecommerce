@@ -21,7 +21,7 @@ class MarketingPreferenceUpdateView(SuccessMessageMixin, UpdateView):
     def dispatch(self, *args, **kwargs):
         user = self.request.user
         if not user.is_authenticated:
-            return redirect("/account/login/?next=/marketing/settings/email/")
+            return redirect("/accounts/login/?next=/marketing/settings/email/")
         return super(MarketingPreferenceUpdateView, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):

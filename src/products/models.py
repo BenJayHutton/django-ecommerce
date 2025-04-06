@@ -74,7 +74,7 @@ class Product(models.Model):
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(default='products/150x150.png', upload_to='products/', null=True, blank=True)
     price = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    vat_rate = models.FloatField(default=0.00, max_length=2, choices=VAT_RATE)
+    vat_rate = vat = models.DecimalField(default=0.00, max_digits=10, decimal_places=5, choices=VAT_RATE)
     vat = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
     quantity = models.IntegerField(default=0)
     weight_in_grams = models.FloatField(default=0.00, max_length=2)

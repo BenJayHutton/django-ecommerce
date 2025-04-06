@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.db.models.signals import pre_save, post_save, m2m_changed
 from products.models import Product
 from django.urls import reverse
-import decimal
+from decimal import Decimal
 
 from shipping.views import RoyalMail
 
@@ -109,16 +109,16 @@ class CartManager(models.Manager):
 
     def calculate_cart_total(self, *args, **kwargs):
         cart_obj = kwargs.get("cart_obj", None)
-        total = decimal(0)
-        vat = decimal(0)
-        sub_total = decimal(0)
+        total = Decimal(0)
+        vat = Decimal(0)
+        sub_total = Decimal(0)
         shipping_cost = cart_obj.shipping
         for x in cart_obj.cart_items.all():
             total += x.total
-        vat = total * 0.2
+        vat = total * Decimal(0.2)
         if vat < 0.01:
             vat = 0
-        sub_total = round(total + vat + shipping_cost, 2)
+        sub_total = total + vat + shipping_cost
         return total, vat, sub_total
 
     def total_weight_in_grams(self, request, *args, **kwargs):
@@ -169,7 +169,7 @@ def cart_item_pre_save_reciever(sender, instance, *args, **kwargs):
     try:
         price_of_item = instance.product.price
     except BaseException:
-        price_of_item = 0
+        price_of_item = Decimal(0)
 
     instance.price_of_item = price_of_item
     instance.total = quantity * price_of_item
@@ -181,18 +181,18 @@ pre_save.connect(cart_item_pre_save_reciever, sender=CartItem)
 def cart_post_save_reciever(sender, instance, *args, **kwargs):
     cart_items = instance.cart_items.all()
     royal_mail_obj = RoyalMail
-    vat = float(0.00)
-    sub_total = float(0.00)
+    vat = Decimal(0.00)
+    sub_total = Decimal(0.00)
     cart_item_total = cart_items.update_total()['total__sum']
     total_weight_in_grams = cart_items.update_total_weight()['weight_in_grams__sum']
-    shipping_cost = royal_mail_obj.get_shipping_cost(
-        royal_mail_obj, total_weight_in_grams)
+    shipping_cost = Decimal(royal_mail_obj.get_shipping_cost(
+        royal_mail_obj, total_weight_in_grams))
     if cart_item_total is None:
         cart_item_total = float(0.00)
-    vat = round(cart_item_total * 0.2, 2)
+    vat = cart_item_total * Decimal(0.2)
     if vat < 0.01:
         vat = 0
-    sub_total = round(cart_item_total + vat + shipping_cost, 2)
+    sub_total = cart_item_total + vat + shipping_cost
     instance.weight_in_grams = total_weight_in_grams
     instance.total = cart_item_total
     instance.vat = vat
@@ -206,16 +206,16 @@ post_save.connect(cart_post_save_reciever, sender=Cart)
 def m2m_changed_cart_receiver(sender, instance, action, *args, **kwargs):
     if action == 'post_add' or action == 'post_remove' or action == 'post_clear':
         royal_mail_obj = RoyalMail
-        vat = float(0.00)
-        sub_total = float(0.00)
+        vat = Decimal(0.00)
+        sub_total = Decimal(0.00)
         cart_items = instance.cart_items.all()
         cart_item_total = cart_items.update_total()['total__sum']
         total_weight_in_grams = cart_items.update_total_weight()['weight_in_grams__sum']
-        shipping_cost = royal_mail_obj.get_shipping_cost(
-        royal_mail_obj, total_weight_in_grams)
+        shipping_cost = Decimal(royal_mail_obj.get_shipping_cost(
+        royal_mail_obj, total_weight_in_grams))
         if cart_item_total is None:
             cart_item_total = 0
-        vat = round(cart_item_total * 0.2, 2)
+        vat = cart_item_total * Decimal(0.2)
         if vat < 0.01:
             vat = 0
         sub_total = cart_item_total + vat + shipping_cost
