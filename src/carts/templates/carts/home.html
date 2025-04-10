@@ -19,7 +19,7 @@
           </div>
           
           <div>
-            £ <span id="cart_item_price">{{ cart_item.total }}</span>
+            £ <span id="cart_item_price">{{ cart_item.total|floatformat:2 }}</span>
           </div>
           
           <input type="hidden" name="cart_item_id" value="{{cart_item.id}}">
@@ -34,16 +34,16 @@
     {% endfor %}
     <div>
       <div>
-        Total £ <span class="cart-total">{{ cart_obj.total }}</span>
+        Total £ <span class="cart-total">{{ cart_obj.total|floatformat:2 }}</span>
       </div>
       <div>
-        Vat £ <span class="cart-vattotal">{{ cart_obj.vat }}</span>
+        Vat £ <span class="cart-vattotal">{{ cart_obj.vat|floatformat:2 }}</span>
       </div>
       <div>
-        Shipping £ <span class="cart-shipping">{{ cart_obj.shipping }}</span>
+        Shipping £ <span class="cart-shipping">{{ cart_obj.shipping|floatformat:2 }}</span>
       </div>
       <div>
-        Subtotal £ <span class="cart-subtotal"> {{ cart_obj.subtotal }}</span>
+        Subtotal £ <span class="cart-subtotal"> {{ cart_obj.subtotal|floatformat:2 }}</span>
       </div>
       <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" >
         <a href="{% url 'cart:checkout' %}">checkout</a>
