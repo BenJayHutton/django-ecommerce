@@ -14,6 +14,9 @@ User = settings.AUTH_USER_MODEL
 class CartItemManagerQuerySet(models.query.QuerySet):
     def update_total(self):
         return self.aggregate(Sum("total"))
+    
+    def update_vat(self):
+        return self.aggregate(Sum("vat"))
 
     def update_total_weight(self):
         return self.aggregate(Sum("weight_in_grams"))
@@ -59,6 +62,8 @@ class CartItemManager(models.Manager):
         return total 
 
 class CartItem(models.Model):
+    # I think the vat for each item should be stored and calulated here
+    # the sum total can be calculated in the Cart class.
     product = models.ForeignKey(
         Product,
         default=None,
@@ -73,7 +78,8 @@ class CartItem(models.Model):
         null=True,
         blank=True)
     total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    weight_in_grams = models.FloatField(null=True, blank=True, default=0.00, max_length=2)
+    vat = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    weight_in_grams = models.FloatField(default=0.00, max_length=2)
     meta_data = models.TextField(null=True, blank=True)
 
     objects = CartItemManager()
@@ -81,6 +87,10 @@ class CartItem(models.Model):
     def __str__(self):
         to_return = "Cart basket: " + str(self.id) + " - " + self.product.title
         return to_return
+    
+    def calculate_cart_item_vat(self):
+        vat = Decimal(self.quantity * self.product.vat_rate)
+        return vat
 
 
 class CartManager(models.Manager):
@@ -114,8 +124,8 @@ class CartManager(models.Manager):
         sub_total = Decimal(0)
         shipping_cost = cart_obj.shipping
         for x in cart_obj.cart_items.all():
+            vat += x.calculate_cart_item_vat()
             total += x.total
-        vat = total * Decimal(0.2)
         if vat < 0.01:
             vat = 0
         sub_total = total + vat + shipping_cost
@@ -169,30 +179,30 @@ def cart_item_pre_save_reciever(sender, instance, *args, **kwargs):
     try:
         price_of_item = instance.product.price
     except BaseException:
-        price_of_item = Decimal(0)
+        price_of_item = Decimal(0.00)
 
     instance.price_of_item = price_of_item
     instance.total = quantity * price_of_item
+    instance.vat = instance.calculate_cart_item_vat()
 
 
 pre_save.connect(cart_item_pre_save_reciever, sender=CartItem)
 
 
 def cart_post_save_reciever(sender, instance, *args, **kwargs):
-    cart_items = instance.cart_items.all()
     royal_mail_obj = RoyalMail
-    vat = Decimal(0.00)
-    sub_total = Decimal(0.00)
+    cart_items = instance.cart_items.all()
     cart_item_total = cart_items.update_total()['total__sum']
+    if cart_item_total is None:
+        cart_item_total = Decimal(0.00)
+    vat = cart_items.update_vat()['vat__sum']
+    print("cart_post_save_reciever - vat:", vat)
+    if vat < 0.01 or None:
+        vat = Decimal(0.00)
     total_weight_in_grams = cart_items.update_total_weight()['weight_in_grams__sum']
     shipping_cost = Decimal(royal_mail_obj.get_shipping_cost(
-        royal_mail_obj, total_weight_in_grams))
-    if cart_item_total is None:
-        cart_item_total = float(0.00)
-    vat = cart_item_total * Decimal(0.2)
-    if vat < 0.01:
-        vat = 0
-    sub_total = cart_item_total + vat + shipping_cost
+        royal_mail_obj, total_weight_in_grams))    
+    sub_total = cart_item_total + vat + shipping_cost    
     instance.weight_in_grams = total_weight_in_grams
     instance.total = cart_item_total
     instance.vat = vat
