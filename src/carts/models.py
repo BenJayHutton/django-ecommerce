@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Sum
-from django.db.models.signals import pre_save, post_save, m2m_changed
 from products.models import Product
 from django.urls import reverse
 from decimal import Decimal
@@ -62,8 +61,6 @@ class CartItemManager(models.Manager):
         return total 
 
 class CartItem(models.Model):
-    # I think the vat for each item should be stored and calulated here
-    # the sum total can be calculated in the Cart class.
     product = models.ForeignKey(
         Product,
         default=None,
@@ -71,14 +68,14 @@ class CartItem(models.Model):
         blank=True,
         on_delete=models.SET_NULL)
     quantity = models.IntegerField(default=None, null=True)
-    price_of_item = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    price_of_item = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
     session_id = models.CharField(
         max_length=120,
         default=0,
         null=True,
         blank=True)
-    total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    vat = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
+    vat = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
     weight_in_grams = models.FloatField(default=0.00, max_length=2)
     meta_data = models.TextField(null=True, blank=True)
 
@@ -89,8 +86,15 @@ class CartItem(models.Model):
         return to_return
     
     def calculate_cart_item_vat(self):
-        vat = Decimal(self.quantity * self.product.vat_rate)
+        vat = (self.product.price * Decimal(self.product.vat_rate))*self.quantity
+        print("calculate_cart_item_total - vat:", vat)
         return vat
+    
+    def calculate_cart_item_total(self):
+        total = Decimal(0.00)
+        total = self.quantity * Decimal(self.product.price)
+        print("calculate_cart_item_total - total:", total)
+        return total
 
 
 class CartManager(models.Manager):
@@ -125,7 +129,7 @@ class CartManager(models.Manager):
         shipping_cost = cart_obj.shipping
         for x in cart_obj.cart_items.all():
             vat += x.calculate_cart_item_vat()
-            total += x.total
+            total += x.calculate_cart_item_total()
         if vat < 0.01:
             vat = 0
         sub_total = total + vat + shipping_cost
@@ -145,10 +149,10 @@ class Cart(models.Model):
         blank=True,
         on_delete=models.SET_NULL)
     cart_items = models.ManyToManyField(CartItem, default=None, blank=True)
-    total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    vat = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    shipping = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    subtotal = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
+    vat = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
+    shipping = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
+    subtotal = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
     weight_in_grams = models.FloatField(null=True, blank=True, default=0.00, max_length=2)
     meta_data = models.TextField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
@@ -169,71 +173,3 @@ class Cart(models.Model):
 
     def get_absolute_url(self):
         return reverse("cart:detail", kwargs={'pk': self.pk})
-
-
-def cart_item_pre_save_reciever(sender, instance, *args, **kwargs):
-    try:
-        quantity = int(instance.quantity)
-    except BaseException:
-        quantity = 0
-    try:
-        price_of_item = instance.product.price
-    except BaseException:
-        price_of_item = Decimal(0.00)
-
-    instance.price_of_item = price_of_item
-    instance.total = quantity * price_of_item
-    instance.vat = instance.calculate_cart_item_vat()
-
-
-pre_save.connect(cart_item_pre_save_reciever, sender=CartItem)
-
-
-def cart_post_save_reciever(sender, instance, *args, **kwargs):
-    royal_mail_obj = RoyalMail
-    cart_items = instance.cart_items.all()
-    cart_item_total = cart_items.update_total()['total__sum']
-    if cart_item_total is None:
-        cart_item_total = Decimal(0.00)
-    vat = cart_items.update_vat()['vat__sum']
-    print("cart_post_save_reciever - vat:", vat)
-    if vat < 0.01 or None:
-        vat = Decimal(0.00)
-    total_weight_in_grams = cart_items.update_total_weight()['weight_in_grams__sum']
-    shipping_cost = Decimal(royal_mail_obj.get_shipping_cost(
-        royal_mail_obj, total_weight_in_grams))    
-    sub_total = cart_item_total + vat + shipping_cost    
-    instance.weight_in_grams = total_weight_in_grams
-    instance.total = cart_item_total
-    instance.vat = vat
-    instance.shipping = shipping_cost
-    instance.subtotal = sub_total
-
-
-post_save.connect(cart_post_save_reciever, sender=Cart)
-
-
-def m2m_changed_cart_receiver(sender, instance, action, *args, **kwargs):
-    if action == 'post_add' or action == 'post_remove' or action == 'post_clear':
-        royal_mail_obj = RoyalMail
-        vat = Decimal(0.00)
-        sub_total = Decimal(0.00)
-        cart_items = instance.cart_items.all()
-        cart_item_total = cart_items.update_total()['total__sum']
-        total_weight_in_grams = cart_items.update_total_weight()['weight_in_grams__sum']
-        shipping_cost = Decimal(royal_mail_obj.get_shipping_cost(
-        royal_mail_obj, total_weight_in_grams))
-        if cart_item_total is None:
-            cart_item_total = 0
-        vat = cart_item_total * Decimal(0.2)
-        if vat < 0.01:
-            vat = 0
-        sub_total = cart_item_total + vat + shipping_cost
-        instance.weight_in_grams = total_weight_in_grams
-        instance.vat = vat
-        instance.shipping = shipping_cost
-        instance.subtotal = sub_total
-        instance.save()
-
-
-m2m_changed.connect(m2m_changed_cart_receiver, sender=Cart.cart_items.through)

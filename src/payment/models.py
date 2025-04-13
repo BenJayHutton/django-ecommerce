@@ -170,7 +170,7 @@ class Payment(models.Model):
     paymentMethod = models.CharField(null=True, blank=True, default=None, max_length=128)
     is_paid = models.BooleanField(default=False)
     summery = models.TextField()
-    total = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=33, decimal_places=28)
     meta_data = models.TextField(null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     update = models.DateTimeField(auto_now=True)
