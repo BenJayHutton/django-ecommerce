@@ -90,7 +90,7 @@ class Product(models.Model):
         return reverse("product:detail", kwargs={"slug": self.slug})
     
     def price_in_pennies(self):
-        return "{:n}".format(self.price * 100)
+        return "{:n}".format(float(self.price) * 100)
 
     @property
     def endpoint(self):
