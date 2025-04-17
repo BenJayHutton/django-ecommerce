@@ -1,8 +1,8 @@
 Hello {{ name }}
 
-Thank you for your order,<br>
-If you have any queries, please get in contact with us at shop@SweetSweetSwag.com
-quoting your order number {{ order_id }}
+Your order has now been received and is being processed.
+If you have any queries, please contact us at shop@SweetSweetSwag.com
+quoting your order number, {{ order_id }}
 
 {{ cus_items }}
 

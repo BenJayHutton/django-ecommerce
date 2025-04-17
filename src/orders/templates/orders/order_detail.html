@@ -9,10 +9,10 @@
         <p>Items: {% for cart_item in object.cart.cart_items.all %}{{cart_item.product}}{% if not forloop.last %}, {% endif %}{% endfor %} </p>
         <p>Shipping address {{ object.shipping_address.get_address}}</p>
         <p>Billing address {{ object.shipping_address.get_address}}</p>
-        <p>Cart Total: £{{ object.cart.total}}</p>
-        <p>Vat Total: £{{ object.cart.vat}}</p>
-        <p>Shipping Total: £{{ object.shipping_total}}</p>
-        <p>Order Total: £{{ object.total}}</p>
+        <p>Cart Total: £{{ object.cart.total|floatformat:2}}</p>
+        <p>Vat Total: £{{ object.cart.vat|floatformat:2}}</p>
+        <p>Shipping Total: £{{ object.shipping_total|floatformat:2}}</p>
+        <p>Order Total: £{{ object.total|floatformat:2}}</p>
         <p>Order Status: {{ object.get_status}}</p>
         <form class="p-2" method="post" action="{% url 'orders:confirmation' %}">
             {% csrf_token %}

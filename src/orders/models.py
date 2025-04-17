@@ -131,6 +131,7 @@ class OrderManager(models.Manager):
             order_tax = order.tax
             order_shipping = order.shipping_total
             order_total = order.total
+            order_subtotal = order.sub_total
         context = {
             'name': cus_name,
             'order_id': order_id,
@@ -138,6 +139,7 @@ class OrderManager(models.Manager):
             'order_tax': order_tax,
             'order_shipping': order_shipping,
             'order_total': order_total,
+            'order_subtotal': order_subtotal,
         }
         txt_ = get_template(
             "order_email/emails/order_confirmation.txt").render(context)
@@ -227,10 +229,10 @@ class Order(models.Model):
         max_length=120,
         default='created',
         choices=ORDER_STATUS_CHOICES)
-    total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    tax = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    shipping_total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
-    sub_total = models.DecimalField(default=0.00, max_digits=10, decimal_places=5)
+    total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
+    tax = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
+    shipping_total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
+    sub_total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
     active = models.BooleanField(default=True)
     meta_data = models.TextField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
