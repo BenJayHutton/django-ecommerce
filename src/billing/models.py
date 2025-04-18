@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_save, pre_save
 from django.urls import reverse
-
 from accounts.models import GuestEmail
 
 User = settings.AUTH_USER_MODEL
@@ -62,16 +60,8 @@ class BillingProfile(models.Model):
             return default_cards.first()
         return None
 
+    @property
     def set_cards_inactive(self):
         card_qs = self.get_cards()
         card_qs.update(active=False)
         return card_qs.filter(active=True).count()
-
-
-def user_created_reciever(sender, instance, created, *args, **kwargs):
-    if created and instance.email:
-        BillingProfile.objects.get_or_create(
-            user=instance, email=instance.email)
-
-
-post_save.connect(user_created_reciever, sender=User)

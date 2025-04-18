@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_save, pre_save
 
 from billing.models import BillingProfile
 from orders.models import Order
@@ -77,9 +76,7 @@ class CardManager(models.Manager):
         return self.get_queryset().filter(active=True)
 
 
-
-
-class Card(models.Model): # use this in paymwnt.stripe model
+class Card(models.Model):
     billing_profile = models.ForeignKey(
         BillingProfile, null=True, on_delete=models.SET_NULL)
     stripe_id = models.CharField(max_length=120)
@@ -128,18 +125,6 @@ class ChargeManager(models.Manager):
         )
         new_charge_obj.save()
         return new_charge_obj.paid, new_charge_obj.seller_message
-
-
-def new_card_post_save_receiver(sender, instance, created, *args, **kwargs):
-    if instance.default:
-        billing_profile = instance.billing_profile
-        qs = Card.objects.filter(
-            billing_profile=billing_profile).exclude(
-            pk=instance.pk)
-        qs.update(default=False)
-
-
-post_save.connect(new_card_post_save_receiver, sender=Card)
 
 
 class Charge(models.Model):

@@ -1,11 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from django.shortcuts import reverse
-
-from eCommerce.utils import unique_slug_generator
 from tags.models import Tag
+
 User = get_user_model()
 
 
@@ -48,9 +45,3 @@ class Blog(models.Model):
 
     def get_absolute_url(self):
         return reverse("blog:detail", kwargs={"slug": self.slug})
-
-
-@receiver(pre_save, sender=Blog)
-def blog_pre_save_receiver(sender, instance, **kwargs):
-    if not instance.slug:
-        instance.slug = unique_slug_generator(instance)
