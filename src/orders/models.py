@@ -233,8 +233,8 @@ class Order(models.Model):
     sub_total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
     active = models.BooleanField(default=True)
     meta_data = models.TextField(null=True, blank=True)
-    updated = models.DateTimeField(auto_now=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(default=timezone.now)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     objects = OrderManager()
 
@@ -356,8 +356,8 @@ class ProductPurchase(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     refunded = models.BooleanField(default=False)
     meta_data = models.TextField(null=True, blank=True)
-    updated = models.DateTimeField(auto_now=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(default=timezone.now)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     objects = ProductPurchaseManager()
 

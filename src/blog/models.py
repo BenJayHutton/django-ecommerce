@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 from django.shortcuts import reverse
 from tags.models import Tag
 
@@ -31,9 +32,9 @@ class Blog(models.Model):
     blog_post = models.TextField(blank=True, null=True)
     tags = models.ManyToManyField(Tag, blank=True)
     is_public = models.BooleanField(default=False)
-    updated = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(default=timezone.now)
     meta_data = models.TextField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ('-date',)

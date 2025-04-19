@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-
+from django.utils import timezone
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
@@ -42,7 +42,7 @@ class ObjectViewed(models.Model):
     content_object = GenericForeignKey(
         'content_type', 'object_id')  # instance of the object above
     meta_data = models.TextField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     objects = ObjectViewedManager()
 
@@ -65,7 +65,7 @@ class UserSession(models.Model):
     session_key = models.CharField(max_length=100, blank=True, null=True)
     active = models.BooleanField(default=True)
     ended = models.BooleanField(default=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     def end_session(self):
         session_key = self.session_key

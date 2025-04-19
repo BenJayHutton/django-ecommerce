@@ -66,7 +66,7 @@ class User(AbstractBaseUser):
     is_active = models.BooleanField(default=False)
     staff = models.BooleanField(default=False)  # Staff user, not super user
     admin = models.BooleanField(default=False)  # Superuser
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -138,8 +138,8 @@ class EmailActivation(models.Model):
     activated = models.BooleanField(default=False)
     forced_expired = models.BooleanField(default=False)
     expires = models.IntegerField(default=7)  # expires in x days
-    timestamp = models.DateTimeField(auto_now_add=True)
-    update = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(default=timezone.now)
+    update = models.DateTimeField(default=timezone.now)
 
     objects = EmailActivationManager()
 
@@ -206,8 +206,8 @@ class EmailActivation(models.Model):
 class GuestEmail(models.Model):
     email = models.EmailField()
     active = models.BooleanField(default=True)
-    updated = models.DateTimeField(auto_now=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(default=timezone.now)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.email

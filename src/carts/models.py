@@ -4,7 +4,7 @@ from django.db.models import Sum
 from products.models import Product
 from django.urls import reverse
 from decimal import Decimal
-
+from django.utils import timezone
 from shipping.views import RoyalMail
 
 User = settings.AUTH_USER_MODEL
@@ -155,8 +155,8 @@ class Cart(models.Model):
     subtotal = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
     weight_in_grams = models.FloatField(null=True, blank=True, default=0.00, max_length=2)
     meta_data = models.TextField(null=True, blank=True)
-    updated = models.DateTimeField(auto_now=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(default=timezone.now)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     objects = CartManager()
 

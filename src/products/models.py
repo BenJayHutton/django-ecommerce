@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import reverse
-
+from django.utils import timezone
 from tags.models import Tag
 
 User = settings.AUTH_USER_MODEL
@@ -82,7 +82,7 @@ class Product(models.Model):
     is_digital = models.BooleanField(default=False)
     public = models.BooleanField(default=True)
     tags = models.ManyToManyField(Tag, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     objects = ProductManager()
 

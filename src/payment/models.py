@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import models
-
+from django.utils import timezone
 from billing.models import BillingProfile
 from orders.models import Order
 
@@ -88,7 +88,7 @@ class Card(models.Model):
     default = models.BooleanField(default=True)
     active = models.BooleanField(default=True)
     meta_data = models.TextField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
 
     objects = CardManager()
 
@@ -157,8 +157,8 @@ class Payment(models.Model):
     summery = models.TextField()
     total = models.DecimalField(max_digits=33, decimal_places=28)
     meta_data = models.TextField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    update = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(default=timezone.now)
+    update = models.DateTimeField(default=timezone.now)
 
     objects = PaymentManager()
 

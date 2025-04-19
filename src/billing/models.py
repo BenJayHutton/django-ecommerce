@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from accounts.models import GuestEmail
 
 User = settings.AUTH_USER_MODEL
@@ -32,8 +33,8 @@ class BillingProfile(models.Model):
         on_delete=models.SET_NULL)
     email = models.EmailField()
     active = models.BooleanField(default=True)
-    update = models.DateTimeField(auto_now=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    update = models.DateTimeField(default=timezone.now)
+    timestamp = models.DateTimeField(default=timezone.now)
     customer_id = models.CharField(max_length=120, null=True, blank=True)
     meta_data = models.TextField(null=True, blank=True)
 
