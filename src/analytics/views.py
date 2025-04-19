@@ -3,11 +3,7 @@ from django.http import JsonResponse
 from django.views.generic import TemplateView, View, ListView
 from django.shortcuts import render
 from django.utils import timezone
-
-import datetime
-
-from stripe import Product as StripeProduct
-
+from datetime import datetime
 from orders.models import Order
 from products.models import Product
 from billing.models import BillingProfile
@@ -153,9 +149,9 @@ class SalesView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(SalesView, self).get_context_data(*args, **kwargs)
         qs = Order.objects.all().by_weeks_range(weeks_ago=10, number_of_weeks=10)
-        start_date = timezone.now().date()
+        start_date = timezone.localtime(timezone.now())
         today_data = qs.by_range(
-            start_date=timezone.now().date()).get_sales_breakdown()
+            start_date).get_sales_breakdown()
         context['today'] = today_data
         context['this_week'] = qs.by_weeks_range(
             weeks_ago=1, number_of_weeks=1).get_sales_breakdown()
