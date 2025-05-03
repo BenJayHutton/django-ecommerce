@@ -8,6 +8,7 @@
         <meta name="description" content="{{description}}">
         {% tailwind_css %}
         {% include 'base/css.html' %}
+        {% include 'base/js.html' %}
     </head>
     <body class="text-gray-700 font-mono">
         {% if messages %}
@@ -40,7 +41,7 @@
         <footer class="text-center">
             Copyright 2025 &copy;
         </footer>
-        {% include 'base/js.html' %}
+        
         {% block javascript %}{%endblock %}
     </body>
 </html>
