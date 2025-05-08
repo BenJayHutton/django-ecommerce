@@ -10,9 +10,9 @@
         <!-- Order Card -->
         <div class="card hover:shadow-lg">
             <div class="pt-4">Order ID: <a href="{{object.get_absolute_url }}">{{ object.order_id }}</a></div>
-            <div class="pt-4 px-1">Bought: </div>
+            <div class="pt-4 px-1">Bought: {% for cart_item in object.cart.cart_items.all %}{{cart_item}} {% endfor %}</div>
             <div class="px-1">Status: {{ object.get_status }}</div>
-            <div class="px-1">Total: {{ object.total }}</div>
+            <div class="px-1">Total: {{ object.total|floatformat:2 }}</div>
         </div>
         {% empty %}
         <div class="px-1">No orders yet</div>

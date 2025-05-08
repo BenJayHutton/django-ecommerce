@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content%}
+<main class="px-16 py-6 bg-gray-100">
+  <header>
+    {% if title %}<h1 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-2xl lg:text-3xl">{{ title }}</h1>{% endif %}
+  </header>
+  <form method="POST" action="{% if action_url %}{{ action_url }}{% endif %}">{% csrf_token %}
+      {% if next_url %}
+          <input type="hidden" name="next" value="{{ next_url }}" />
+      {% endif %}
+      {{ form.as_p  }}
+      <button type="submit" class="btn bg-green-500 text-gray-100 hover:text-gray-500">Save</button>
+  </form>
+</main>
+{% endblock %}

@@ -39,12 +39,12 @@ class MailchimpWebhookView(CsrfExemptMixin, View):
 
     def post(self, request, *args, **kwargs):
         data = request.POST
-        list_id = data, get('data[list_id]')
+        list_id = data.get('data[list_id]')
         if str(list_id) == str(MAILCHIMP_EMAIL_LIST_ID):
             hook_type = data.get("type")
             email = data.get('data[email]')
             response_status, response_status = Mailchimp().check_subscription_status(email)
-            sub_status = response['status']
+            sub_status = response_status['status']
             is_subbed = None
             mailchimp_subbed = None
             if sub_status == "subscribed":

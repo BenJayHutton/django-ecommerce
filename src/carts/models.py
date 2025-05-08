@@ -82,8 +82,7 @@ class CartItem(models.Model):
     objects = CartItemManager()
 
     def __str__(self):
-        to_return = "Cart basket: " + str(self.id) + " - " + self.product.title
-        return to_return
+        return str(self.product.title)
     
     def calculate_cart_item_vat(self):
         vat = (self.product.price * Decimal(self.product.vat_rate))*self.quantity
