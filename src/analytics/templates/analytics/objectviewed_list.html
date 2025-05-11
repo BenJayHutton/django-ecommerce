@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Analytics</h1>
+<main class="px-16 py-6 bg-gray-100 md:col-span-4">
+    <h1>Analytics</h1>
 
 {% for obj in object_list %}
 <p>
@@ -8,6 +9,6 @@
     Ip Address: {{ obj.ip_address }} <br>
     Object Viewed: {{ obj.content_object }}<br>
 </p>
-
 {% endfor %}
+</main>
 {% endblock %}

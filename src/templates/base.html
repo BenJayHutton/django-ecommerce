@@ -7,8 +7,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="{{description}}">
         {% tailwind_css %}
-        {% include 'base/css.html' %}
-        {% include 'base/js.html' %}
     </head>
     <body class="text-gray-700 font-mono">
         {% if messages %}
@@ -43,5 +41,7 @@
         </footer>
         
         {% block javascript %}{%endblock %}
+        {% include 'base/css.html' %}
+        {% include 'base/js.html' %}
     </body>
 </html>

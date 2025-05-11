@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Orders</h1>
+<main class="px-16 py-6 bg-gray-100 md:col-span-4">
+    <h1>Orders</h1>
 
 <div class="row">
     <div class="col-8">
@@ -21,4 +22,5 @@
         <a href="{% url 'orders:create' %}">Create Order</a>
     </div>
 </div>
+</main>
 {% endblock %}
