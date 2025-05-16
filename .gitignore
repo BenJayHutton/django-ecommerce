@@ -19,6 +19,7 @@ theme/
 node_modules/
 _accounts/
 _payment/
+pip-notes.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -6,6 +6,7 @@
         <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="{{description}}">
+        {% include 'head/css.html' %}
         {% tailwind_css %}
     </head>
     <body class="text-gray-700 font-mono">
@@ -40,8 +41,7 @@
             Copyright 2025 &copy;
         </footer>
         
-        {% block javascript %}{%endblock %}
-        {% include 'base/css.html' %}
-        {% include 'base/js.html' %}
+        {% block javascript %}{%endblock %}        
+        {% include 'footer/js.html' %}
     </body>
 </html>
