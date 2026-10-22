@@ -10,16 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from datetime import timedelta
-from pathlib import Path
+import datetime
+import dotenv
 import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+dotenv.read_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # Quick-start development settings - unsuitable for production
@@ -38,31 +36,31 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #Third party packages
-    'corsheaders',
-    'rest_framework',
-    'rest_framework.authtoken',
-    'rest_framework_simplejwt',
-    # project app
+
+    #Third party apps
+    'storages',
+    'django_extensions',
+    'django_browser_reload',
+
+    #our app
     'accounts',
-    'api',
     'addresses',
     'analytics',
+    'api',
     'billing',
     'blog',
+    'bookkeeping',
     'carts',
-    'django_browser_reload',
+    'currier',
     'marketing',
     'orders',
     'payment',
     'products',
     'search',
-    'shipping',
     'tags',
-    'tailwind',
-    'theme',
 ]
 AUTH_USER_MODEL = 'accounts.User' #changes built-in user to ours
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -79,7 +77,7 @@ MIDDLEWARE = [
     'django_browser_reload.middleware.BrowserReloadMiddleware',
 ]
 
-ROOT_URLCONF = 'eCommerce.urls'
+ROOT_URLCONF = 'ecommerce.urls'
 
 TEMPLATES = [
     {
@@ -133,11 +131,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-MEDIA_URL = 'media/'
+SSTATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 
 STATICFILES_DIRS = [
-    BASE_DIR.parent / 'static'
+    os.path.join(BASE_DIR, "static"),
 ]
 
 # Default primary key field type
@@ -157,14 +155,4 @@ REST_FRAMEWORK = {
     "PAGE_SIZE":10,
 }
 
-SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-}
-
-INTERNAL_IPS = [
-    "127.0.0.1:8000",
-    "localhost:8000"
-]
 TAILWIND_APP_NAME = 'theme'
