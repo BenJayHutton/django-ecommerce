@@ -1,0 +1,9 @@
+<main class="px-16 py-6 bg-gray-100">
+    <a class="p-4" href="{% url 'account:home' %}"><< Back Home</a>
+
+    <form method="POST" action="{% url 'currier:create' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+</main>
