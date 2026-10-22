@@ -1,4 +1,4 @@
-{% load static %}{% load static tailwind_tags %}<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
     <head>
         <title>{{ title }}</title>
@@ -6,8 +6,9 @@
         <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="{{description}}">
-        {% include 'head/css.html' %}
-        {% tailwind_css %}
+        {% include 'base/css.html' %}
+        {% include 'base/js.html' %}
+        {% block javascript %}{%endblock %}
     </head>
     <body class="text-gray-700 font-mono">
         {% if messages %}
@@ -18,30 +19,14 @@
         </div>
         {% endfor %}
         {% endif %}
-        <div class="flex justify-center md:justify-end">
-            {% if user.is_authenticated %}
-            <a href="{% url 'accounts:logout' %}" class="text-primary ml-2 mr-2 btn border-primary md:border-2 hover:bg-primary hover:text-white transition ease-out duration-500">Logout</a>
-            {% else %}
-            <a href="{% url 'accounts:login' %}" class="text-primary btn border-primary md:border-2 hover:bg-primary hover:text-white transition ease-out duration-500">
-                  Log in</a>
-            <a href="{% url 'accounts:register' %}" class="text-primary ml-2 btn border-primary md:border-2 hover:bg-primary hover:text-white transition ease-out duration-500">Register</a>
-            {% endif %}
+        <div>
+            {% include 'base/navbar.html' with brand_name='#SweetSweetSwag' %}
         </div>
-
-        <div class="grid md:grid-cols-5">
-            <div class="md:col-span-1 p-1">
-                {% include 'base/navbar.html' with brand_name='#SweetSweetSwag' %}
-            </div>
-            <div class="md:col-span-4 p-1">
-                {% block content %}{% endblock %}
-            </div>
-        </div>
-
-        <footer class="text-center">
-            Copyright 2025 &copy;
-        </footer>
-        
-        {% block javascript %}{%endblock %}        
-        {% include 'footer/js.html' %}
+        <div>
+        {% block content %}{% endblock %}
+        </div>        
+        <footer class="px-6">
+            Copyright 2025
+        </footer>        
     </body>
 </html>

@@ -177,6 +177,8 @@ preference.addEventListener('click',()=>{
     }else{
         preferenceTab.classList.add('hidden');
     }
+
+
 })
 
 
@@ -218,4 +220,6 @@ admin.addEventListener('click',()=>{
     }else{
         adminTab.classList.add('hidden');
     }
+
+
 })
