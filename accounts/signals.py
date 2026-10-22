@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from .models import EmailActivation, User
 
 user_logged_in = Signal()
-from eCommerce.utils import unique_key_generator
+from ecommerce.utils import unique_key_generator
 
 
 @receiver(pre_save, sender=EmailActivation)

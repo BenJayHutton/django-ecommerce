@@ -6,4 +6,4 @@ Please activate your account for {{ email }} by clicking link below:
 
 Once activated, you can log in!
 
-Thank you eCommerce
+Thank you ecommerce Team

@@ -1,5 +1,5 @@
 """
-URL configuration for eCommerce project.
+URL configuration for ecommerce project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
@@ -20,10 +20,10 @@ from django.urls import include, path
 
 from .views import about_page, contact_page, DefaultHomePage
 
-from addresses import views #checkout_address_create_view, checkout_address_reuse_view
+from addresses import views
 from orders.views import LibraryView
 
-app_name = 'eCommerce'
+app_name = 'ecommerce'
 
 urlpatterns = [
     path('', DefaultHomePage.as_view(), name='home'),
@@ -33,7 +33,7 @@ urlpatterns = [
     path('accounts/', include("accounts.password.urls")),
     path('analytics/', include(("analytics.urls", "analytics"), namespace='analytics')),
     path('api/', include('api.urls', namespace='api')),
-    path('api/v2/', include('eCommerce.routers', namespace='api_v2')),
+    path('api/v2/', include('ecommerce.routers', namespace='api_v2')),
     path('billing/', include(("billing.urls", "billing"), namespace='billing')),
     path('blog/', include(("blog.urls", "blog"), namespace='blog')),
     path('cart/', include(("carts.urls", "blog"), namespace='cart')),

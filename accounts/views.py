@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 from django.views.generic import CreateView, FormView, DetailView, View, UpdateView
 from django.views.generic.edit import FormMixin
 
-from eCommerce.mixins import NextUrlMixin, RequestFormAttachMixin
+from ecommerce.mixins import NextUrlMixin, RequestFormAttachMixin
 
 from .forms import LoginForm, RegisterForm, GuestForm, ReactivateEmailForm, UserDetailChangeForm
 from .models import EmailActivation

@@ -1,6 +1,6 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
-from eCommerce.utils import unique_order_id_generator
+from ecommerce.utils import unique_order_id_generator
 from .models import Order
 from carts.models import Cart
 
