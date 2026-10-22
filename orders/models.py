@@ -4,8 +4,6 @@ from django.db import models
 from django.db.models import Count, Sum, Avg
 from django.urls import reverse
 from django.utils import timezone
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 
 from addresses.models import Address
 from billing.models import BillingProfile
