@@ -1,196 +1,154 @@
-from django.shortcuts import render, redirect
-from django.views.generic import TemplateView, View, ListView
-from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
-from django.utils.http import urlencode
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-
-from billing.models import BillingProfile
-from accounts.models import GuestEmail
-from orders.models import Order
-from carts.models import Cart
-from products.models import Product
-from .models import Payment
-
 import json
 import stripe
 import os
+import logging
+from flask import jsonify
+from django.conf import settings
+from django.shortcuts import render, redirect
+from django.views.generic import View
+from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
+from django.utils import timezone
 
+from billing.models import BillingProfile
+from carts.models import Cart
+from orders.models import Order
+from .models import (
+    StripeCheckoutSession,
+    StripeCustomer
+    )
+now = timezone.now()
 
-class Paypal(View):
-    def post(self, request, *args, **kwargs):
-        body = json.loads(request.body.decode("utf-8"))
-        user = None
-        cart_obj = Cart.objects.get(pk=request.session["cart_id"])
-        if request.user.is_authenticated:
-            user = request.user
+stripe_api_key = settings.STRIPE_SECRET_API_KEY
+if stripe_api_key:
+    client = stripe.StripeClient(stripe_api_key)
 
-        paymentMethod = body["paymentMethod"]
-        orderPk = body["orderPk"]
-        orderId = body["orderId"]
-        total = body["total"]
-        vat = body["vat"]
-        shipping = body["shipping"]
-        subTotal = body["subTotal"]
-        paypalOrderID = body["paypalOrderID"]
-        paypalPayerID = body["paypalPayerID"]
-        is_paid = body["is_paid"]
+stripe_logger = logging.getLogger("stripe_logger")
+project_debug_log = logging.getLogger("project_debug_log")
 
-        order_obj = Order.objects.get(pk=orderPk)
-        is_prepared = order_obj.check_done()
-        if is_prepared:
-            if is_paid:
-                order_obj.mark_paid()
-                for item in cart_obj.cart_items.all():
-                    Product.objects.decrease_qty_of_product(
-                        quantity=item.quantity, id=item.product.id)
-                request.session['cart_item_count'] = 0
-                del request.session['cart_id']
-                new_payment_obj = Payment.objects.get_or_create(
-                    user=user,
-                    order=order_obj,
-                    paymentMethod=paymentMethod,
-                    paypalOrderID=paypalOrderID,
-                    paypalPayerID=paypalPayerID,
-                    is_paid=True,
-                    summery=body,
-                    total=subTotal
-                )
-                return JsonResponse({"cartSuccess": True})
-            else:
-                return JsonResponse({"cartSuccess": False})
-        return JsonResponse({"cartSuccess": False})
+class StripeCharge(View):
 
+    def post(self, request):
+        email = None
+        cart_obj, cart_created = Cart.objects.new_or_get(request)
+        user_obj = request.user
+        if  not cart_obj or cart_created:
+            return jsonify({"error": "Your cart is empty."}, status=400)
 
-class BrainTree(View):
-    def post(self, request, *args, **kwargs):
-        pass
-
-
-class Stripe(View):
-    api_key = stripe.api_key = os.environ.get("STRIPE_SECRET_API_KEY", None)
-
-    def post(self, request, *args, **kwargs):
-        pass
-
-
-class StripeWebHook(View):
-    stripe.api_key = os.environ.get("STRIPE_SECRET_API_KEY")
-
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super(StripeWebHook, self).dispatch(*args, **kwargs)
-    
-
-    def post(self, request, *args, **kwargs):
-        payload = request.body
-        sig_header = request.META['HTTP_STRIPE_SIGNATURE']
-        event = None
-        try:
-            event = stripe.Event.construct_from(
-            json.loads(payload), stripe.api_key, sig_header, os.environ.get("STRIPE_WEBHOOK_SECRET")
-            )
-
-        except ValueError as e:
-            # Invalid payload
-            print("invalid payload", e)
-            return HttpResponse(status=400)
-        
-        except stripe.error.SignatureVerificationError as e:
-            # invalid signature
-            print("invalid webhook signature", e)
-            return HttpResponse(status=400)
-
-        # Handle the event
-        if event.type == 'payment_intent.succeeded':
-            payment_intent = event.data.object # contains a stripe.PaymentIntent
-            print('PaymentIntent was successful!')
-        elif event.type == 'payment_method.attached':
-            payment_method = event.data.object # contains a stripe.PaymentMethod
-            print('PaymentMethod was attached to a Customer!')
-        # ... handle other event types
+        if user_obj.is_authenticated:
+            email = user_obj.email
+            stripe_customer = StripeCustomer.objects.find_or_create_stripe_customer_api(email=email)
         else:
-            print('Unhandled event type {}'.format(event.type))
+            email = request.session.get('customer_email')
 
-        if event.type == 'checkout.session.completed':
-            session = event['data']['object']
-            customer_email = session["customer_details"]["email"]
-            order_id = session["metadata"]["order_id"]
-            order_obj = Order.objects.get(order_id=order_id)
-            order_obj.mark_paid()
-            Order.objects.email_order(order_id)
-            request.session['cart_item_count'] = 0
-            del request.session['cart_id']
-        return HttpResponse(status=200)
+        if email is not None:
+            billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email)
+        
+        if billing_profile is not None:
+            order_obj, order_created = Order.objects.new_or_get(billing_profile, cart_obj, session_key=request.session.session_key)
+            order_obj.total = cart_obj.total
+            order_obj.vat = cart_obj.vat
+            order_obj.shipping_total = cart_obj.shipping
+            order_obj.subtotal = cart_obj.subtotal
+            order_obj.save()
+        else:
+            return JsonResponse({"error": "Billing profile is required."})
+        line_items = []
+        product_list = []
+        for item in order_obj.cart.cart_items.all():
+            product_list.append({
+                "product_id": item.id,
+                "product_qty": item.quantity
+            })
+            unit_amount = int(item.product.price * 100)
+            line_items.append({
+                "price_data": {
+                    "currency": "GBP",
+                    "unit_amount": unit_amount,
+                    "product_data": {
+                        "name": item.product.title,
+                        "description": item.product.description,
+                    },
+                },
+                "quantity": int(item.quantity),
+            })
+        shipping_options = [{
+            "shipping_rate_data": {
+                "type": 'fixed_amount',
+                "fixed_amount": {
+                    "amount": int(cart_obj.shipping * 100),
+                    "currency": 'GBP',
+                },
+                "display_name": 'Post Office 2nd Class',
+                "delivery_estimate": {
+                    "minimum": { "unit": "day", "value": 2},
+                    "maximum": { "unit": "day", "value": 4},
+                },
+            },
+        },]
+        domain = getattr(settings, 'BASE_URL', '127.0.0.1')
+        port = getattr(settings, 'PORT', '80')
+        checkout_path = reverse('cart:checkout')
+        checkout_path_success = reverse('cart:success')
+        success_url = f"{request.scheme}://{domain.rstrip('/')}:{port}{checkout_path_success}"
+        cancel_url = f"{request.scheme}://{domain.rstrip('/')}:{port}{checkout_path}"
+        session = client.v1.checkout.sessions.create({
+            "customer_email":email,
+            "line_items":line_items,
+            "shipping_options":shipping_options,
+            "metadata":{
+                "order_id":order_obj.order_id,
+                "cart_obj":cart_obj.id
+                },
+            "mode":"payment",
+            "success_url":success_url,
+            "cancel_url":cancel_url
+        })
+        event_name = session['object']
+        event_id = session['id']
+        stripe_logger.info(f'[{now}] [{event_name}: {event_id}]\n{session}')
+        stripe_obj, created = StripeCheckoutSession.objects.new_or_get(request, event=session)
+        return JsonResponse({"url": session.url})
 
 
-class StripeCharge(ListView):
-    stripe.api_key = os.environ.get("STRIPE_SECRET_API_KEY", None)
+class StripeAdminView(View):
     template_name = 'payment/home.html'
 
     def post(self, request, *args, **kwargs):
-        line_items = []
-        cart_id = self.kwargs["pk"]
-        order_id = self.kwargs["order_id"]
-        customer_email = self.kwargs["customer_email"]
-        if request.user.is_authenticated:
-            customer_obj = BillingProfile.objects.get(email=customer_email)
-        else:
-            customer_obj = GuestEmail.objects.filter(email=customer_email).first()
-
-        cart_obj = Cart.objects.get(id=cart_id)
-        order_obj = Order.objects.get(order_id=order_id)
-        
-        cart_items = cart_obj.cart_items.all()
-
-        for item in cart_items:
-            line_item = {
-                'price_data': {
-                    'currency': 'gbp',
-                    'product_data': {
-                        'name': item.product.title,
-                    },
-                    'unit_amount': item.product.price_in_pennies(),
-                },
-                'quantity': item.quantity,
-            }
-            line_items.append(line_item)
-        
-        vat = {
-            'price_data':{
-            'currency': 'gbp',
-            'product_data':{
-            'name': 'Vat',
-            },
-            'unit_amount': int(cart_obj.vat*100),
-            },
-            'quantity':1,
+        search_obj = request.POST.get("stripe-search")
+        result_obj = None #stripe.Customer.search(query=f"email:'{search_obj}' OR name:'{search_obj}'")
+        result_json = json.dumps(result_obj, default=str)
+        context = {
+            'result_obj': result_json
         }
-        line_items.append(vat)
-        
-        cart_shipping = {
-        'price_data': {
-        'currency': 'gbp',
-        'product_data':{
-        'name': 'Shipping',
-                },
-                'unit_amount': int(cart_obj.shipping*100),
-            },
-            'quantity': 1,
-        }
-        line_items.append(cart_shipping)
+        return render(request, "payment/stripe_admin.html", context)
 
-        YOUR_DOMAIN = os.environ.get("BASE_URL_LOCAL", os.environ.get("BASE_URL"))
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=line_items,
-            metadata={
-                'order_id': order_obj.order_id,
-            },
-            customer_email=customer_obj.email,
-            mode='payment',
-            success_url=YOUR_DOMAIN + reverse('cart:success'),
-            cancel_url=YOUR_DOMAIN + reverse('cart:checkout'),
-        )
-        return redirect(checkout_session.url)
+
+    def get (self, *args, **kwargs):
+        request =  self.request
+        client_list = stripe.Customer.list(limit=10)
+        charge_list = stripe.Charge.list(limit=10)
+
+        context = {
+            'stripe_customer_list': client_list,
+            'stripe_charge_list': charge_list,
+        }
+        return render(request, "payment/stripe_admin.html", context)
+
+
+class PaypalAdminView(View):
+    template_name = 'payment/home.html'
+
+    def get (self, *args, **kwargs):
+        request =  self.request
+        context = {}
+        return render(request, "payment/paypal_admin.html", context)
+
+
+def payment_success(request):
+
+    session_id = request.GET.get("session_id")
+
+    if session_id:
+        session = stripe.checkout.Session.retrieve(session_id)
+    return render(request, "payment_success.html")

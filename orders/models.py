@@ -1,7 +1,8 @@
-import datetime
-from django.template.loader import get_template
+from django.conf import settings
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.db import models
 from django.db.models import Count, Sum, Avg
+from django.template.loader import get_template, render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
@@ -9,15 +10,20 @@ from addresses.models import Address
 from billing.models import BillingProfile
 from carts.models import Cart
 from products.models import Product
-from shipping.views import RoyalMail
 
-import os
+import datetime
+import logging
+
+stripe_debugger = logging.getLogger("stripe_debugger")
+stripe_logger = logging.getLogger("stripe_logger")
 
 ORDER_STATUS_CHOICES = (
     ('created', 'Created'),
     ('paid', 'Paid'),
     ('shipped', 'Shipped'),
     ('refunded', 'Refunded'),
+    ('declined', 'Declined'),
+    ('subscribed', 'Subscribed'),
 )
 
 
@@ -88,13 +94,14 @@ class OrderManagerQuerySet(models.query.QuerySet):
 
 
 class OrderManager(models.Manager):
+    # overriding get_queryset so we can use the queryset above
     def get_queryset(self):
         return OrderManagerQuerySet(self.model, using=self._db)
 
     def by_request(self, request):
         return self.get_queryset().by_request(request)
 
-    def new_or_get(self, billing_profile, cart_obj):
+    def new_or_get(self, billing_profile, cart_obj, session_key):
         created = False
         qs = self.get_queryset().filter(
             billing_profile=billing_profile,
@@ -104,10 +111,9 @@ class OrderManager(models.Manager):
         if qs.count() == 1:
             obj = qs.first()
         else:
-            obj = self.model.objects.create(
-                billing_profile=billing_profile, cart=cart_obj)
+            obj = self.model.objects.create(billing_profile=billing_profile, cart=cart_obj, session_key=session_key)
             created = True
-        return obj
+        return obj, created
 
     def email_order(self, order_id):
         qs = self.get_queryset().filter(order_id=order_id)
@@ -121,38 +127,40 @@ class OrderManager(models.Manager):
             cus_email = order.billing_profile.email
             cus_items = ""
             for cart_items in order.cart.cart_items.all():
-                cus_items = cus_items + \
-                    str(cart_items.quantity) + "* " + \
-                    cart_items.product.title + "\n"
-            order_tax = order.tax
+                cus_items = str(f"{cus_items} - {cart_items.quantity} * {cart_items.product.title}\n")
+            order_vat = order.vat
             order_shipping = order.shipping_total
             order_total = order.total
-            order_subtotal = order.sub_total
+            base_url = settings.BASE_URL
         context = {
             'name': cus_name,
             'order_id': order_id,
             'cus_items': cus_items,
-            'order_tax': order_tax,
+            'order_vat': order_vat,
             'order_shipping': order_shipping,
             'order_total': order_total,
-            'order_subtotal': order_subtotal,
+            'base_url': base_url
         }
-        txt_ = get_template(
-            "order_email/emails/order_confirmation.txt").render(context)
-        html_ = get_template(
-            "order_email/emails/order_confirmation.html").render(context)
+        text_content = render_to_string(
+            "order_email/emails/order_confirmation.txt", context)
+        html_content = render_to_string(
+            "order_email/emails/order_confirmation.html", context)
         recipient_list = [cus_email]
 
-        message = Mail(
-            from_email='no-reply@sweetsweetswag.com',
-            to_emails=cus_email,
-            subject=subject,
-            html_content=html_)
+        msg = EmailMultiAlternatives(
+        subject= subject,
+        body=text_content,
+        from_email="no_reply@sweetsweetswag.com",
+        to=recipient_list,
+        headers={"Confirmation of order": "<mailto:no_reply@sweetsweetswag.com>"},
+        )
+
         try:
-            sg = SendGridAPIClient(os.environ.get('EMAIL_HOST_PASSWORD'))
-            response = sg.send(message)
-        except Exception as e:
-            print(e)
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+        except Exception as E:
+            stripe_debugger.debug(f"Error sending email: {type(E)}: {E}")
+            raise
         return True
     
     def email_order_shipped(self,order_id):
@@ -162,7 +170,7 @@ class OrderManager(models.Manager):
                 subject = "SweetSweetSwag.com, your order: " + order.order_id + " has been shipped."
                 try:
                     cus_name = order.billing_profile.user.full_name
-                except BaseException:
+                except BaseException as e:
                     cus_name = ""
                 order_id = order.order_id
                 cus_email = order.billing_profile.email
@@ -171,64 +179,40 @@ class OrderManager(models.Manager):
             'name': cus_name,
             'order_id': order_id,
         }
-        txt_ = get_template(
-            "order_email/emails/order_shipped.txt").render(context)
-        html_ = get_template(
-            "order_email/emails/order_shipped.html").render(context)
+        text_content = render_to_string(
+            "order_email/emails/order_shipped.txt", context)
+        html_content = render_to_string(
+            "order_email/emails/order_shipped.html", context)
         recipient_list = [cus_email]
-        message = Mail(
-            from_email='no-reply@sweetsweetswag.com',
-            to_emails=cus_email,
-            subject=subject,
-            html_content=html_)
+
+        msg = EmailMultiAlternatives(
+        subject= subject,
+        body=text_content,
+        from_email="no-reply@sweetsweetswag.com",
+        to=recipient_list,
+        headers={"Confirmation of order": "<mailto:cs@sweetsweetswag.com>"},
+        )
         try:
-            sg = SendGridAPIClient(os.environ.get('EMAIL_HOST_PASSWORD'))
-            response = sg.send(message)
-        except Exception as e:
-            print(e)
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+        except Exception as E:
+            stripe_debugger.debug(f"Ordr.objects.email_order_shipped error: {type(E)}: {E}")
+            raise
         return True
 
 
 class Order(models.Model):
-    billing_profile = models.ForeignKey(
-        BillingProfile,
-        default=None,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL)
-    order_id = models.CharField(
-        max_length=120,
-        unique=True,
-        blank=True,
-        null=True)
-    shipping_address = models.ForeignKey(
-        Address,
-        default=None,
-        related_name='shipping_address',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL)
-    billing_address = models.ForeignKey(
-        Address,
-        default=None,
-        related_name='billing_address',
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL)
-    cart = models.ForeignKey(
-        Cart,
-        default=None,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL)
-    status = models.CharField(
-        max_length=120,
-        default='created',
-        choices=ORDER_STATUS_CHOICES)
-    total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
-    tax = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
-    shipping_total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
-    sub_total = models.DecimalField(default=0.00, max_digits=33, decimal_places=28)
+    billing_profile = models.ForeignKey(BillingProfile, default=None, null=True, blank=True, on_delete=models.SET_NULL)
+    shipping_address = models.ForeignKey(Address, default=None, related_name='shipping_address', null=True, blank=True, on_delete=models.SET_NULL)
+    billing_address = models.ForeignKey(Address, default=None, related_name='billing_address', null=True, blank=True, on_delete=models.SET_NULL)
+    cart = models.ForeignKey(Cart, default=None, null=True, blank=True, on_delete=models.SET_NULL)
+    session_key = models.CharField(max_length=255, null=True, blank=True)
+    order_id = models.CharField(max_length=120, unique=True, blank=True, null=True)
+    status = models.CharField(max_length=120, default='created', choices=ORDER_STATUS_CHOICES)
+    total = models.DecimalField(default=0, max_digits=12, decimal_places=4)
+    vat = models.DecimalField(default=0, max_digits=12, decimal_places=4)
+    shipping_total =models.DecimalField(default=0, max_digits=12, decimal_places=4)
+    subtotal = models.DecimalField(default=0, max_digits=12, decimal_places=4)
     active = models.BooleanField(default=True)
     meta_data = models.TextField(null=True, blank=True)
     updated = models.DateTimeField(default=timezone.now)
@@ -252,29 +236,17 @@ class Order(models.Model):
     def __str__(self):
         return self.order_id
 
-    def update_total(self, *args, **kwargs):
-        royal_mail_obj = RoyalMail
-        total_weight_in_grams = None #kwargs['weight_in_grams']
-        shipping_cost = royal_mail_obj.get_shipping_cost(
-        royal_mail_obj, total_weight_in_grams)
+    def update_total(self):
         try:
             self.total = self.cart.total
-            self.shipping_total = shipping_cost
-            self.tax = self.cart.vat
+            self.shipping_total = self.cart.shipping
+            self.vat = self.cart.vat
             self.sub_total = self.cart.subtotal
             self.save()
-        except Exception as e:
-            print(e)
+        except Exception as E:
+            print(f"Order.update_total error {type(E)}: {E}")
 
         return self.sub_total
-
-    def new_or_get_order(self, *args, **kwargs):
-        product_id = kwargs['product_id']
-        product_qty = kwargs['product_qty']
-        session_order_id = kwargs['session_order_id']
-        test_obj = Order(order_id=session_order_id)
-        test_obj.save()
-        obj = Order.objects.filter(order_id__exact=1)
 
     def check_done(self):
         shipping_address_required = not self.cart.is_digital
@@ -324,6 +296,7 @@ class ProductPurchaseQuerySet(models.query.QuerySet):
 
 
 class ProductPurchaseManager(models.Manager):
+    # overriding get_queryset so we can use the queryset above
     def get_queryset(self):
         return ProductPurchaseQuerySet(self.model, using=self._db)
 
@@ -348,14 +321,13 @@ class ProductPurchaseManager(models.Manager):
 
 
 class ProductPurchase(models.Model):
-    order_id = models.CharField(max_length=120)
-    billing_profile = models.ForeignKey(
-        BillingProfile, null=True, on_delete=models.SET_NULL)
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    billing_profile = models.ForeignKey(BillingProfile, null=True, on_delete=models.SET_NULL)
+    order_id = models.CharField(max_length=120)
     refunded = models.BooleanField(default=False)
     meta_data = models.TextField(null=True, blank=True)
-    updated = models.DateTimeField(default=timezone.now)
-    timestamp = models.DateTimeField(default=timezone.now)
+    updated = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     objects = ProductPurchaseManager()
 

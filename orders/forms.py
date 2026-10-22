@@ -15,7 +15,7 @@ class OrderForm(forms.ModelForm):
             'cart',
             'status',
             'shipping_total',
-            'tax',
+            'vat',
             'total',
             'active',
             'meta_data'

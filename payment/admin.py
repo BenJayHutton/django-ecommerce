@@ -1,28 +1,15 @@
 from django.contrib import admin
 
-from .models import Payment, Card, Charge, PaypalPayment, StripePayment
-
-
-class PaymentAdmin(admin.ModelAdmin):
-    search_fields = ['order', 'user__email', 'paypalOrderID', 'paypalPayerID', 'stripeID']
-    list_display = ('paymentMethod', 'order', 'is_paid')
-
-    class Meta:
-        model = Payment
-
-
-class CardAdmin(admin.ModelAdmin):
-    search_fields = ['billing_profile__user__email', 'stripe_id']
-
-    class Meta:
-        model = Card
-
-
-class ChargeAdmin(admin.ModelAdmin):
-    search_fields = ['billing_profile__user__email', 'stripe_id']
-
-    class Meta:
-        model = Charge
+from .models import (
+    PaypalPayment,
+    Stripe,
+    StripeCheckoutSession,
+    StripePaymentIntent,
+    StripeCharge,
+    StripeProduct,
+    StripePrice,
+    StripeCustomer
+    )
 
 
 class PaypalPaymentAdmin(admin.ModelAdmin):
@@ -32,15 +19,60 @@ class PaypalPaymentAdmin(admin.ModelAdmin):
         model = PaypalPayment
 
 
-class StripePaymentAdmin(admin.ModelAdmin):
-    search_fields = ['stripe_id']
+class StripeAdmin(admin.ModelAdmin):
+    search_fields = ['user', 'order', 'checkout_session', 'customer']
 
     class Meta:
-        model = StripePayment
+        model = Stripe
 
 
-admin.site.register(Payment, PaymentAdmin)
-admin.site.register(Card, CardAdmin)
-admin.site.register(Charge, ChargeAdmin)
+class StripeChargeAdmin(admin.ModelAdmin):
+    list_display = ('customer_email', 'charge_id', 'payment_intent_id', 'created_at')
+    ordering = ('customer_email', 'charge_id', 'payment_intent_id', 'created_at')
+    search_fields = ['charge_id', 'payment_intent_id', 'customer_email', 'metadata']
+
+    class Meta:
+        model = StripeCharge
+
+
+class StripeCheckoutSessionAdmin(admin.ModelAdmin):
+    search_fields = ['event_id']
+
+    class Meta:
+        model = StripeCheckoutSession
+
+
+class StripePaymentIntentAdmin(admin.ModelAdmin):
+    search_fields = ['payment_intent_id']
+
+    class Meta:
+        model = StripePaymentIntent
+
+class StripeProductAdmin(admin.ModelAdmin):
+    search_fields = ['payment_intent_id']
+
+    class Meta:
+        model = StripeProduct
+
+
+class StripePriceAdmin(admin.ModelAdmin):
+    search_fields = ['payment_intent_id']
+
+    class Meta:
+        model = StripePrice
+
+
+class StripeCustomerAdmin(admin.ModelAdmin):
+    search_fields = ['payment_intent_id']
+
+    class Meta:
+        model = StripeCustomer
+
 admin.site.register(PaypalPayment, PaypalPaymentAdmin)
-admin.site.register(StripePayment, StripePaymentAdmin)
+admin.site.register(Stripe, StripeAdmin)
+admin.site.register(StripeCharge, StripeChargeAdmin)
+admin.site.register(StripeCheckoutSession, StripeCheckoutSessionAdmin)
+admin.site.register(StripePaymentIntent, StripePaymentIntentAdmin)
+admin.site.register(StripeProduct, StripeProductAdmin)
+admin.site.register(StripePrice, StripePriceAdmin)
+admin.site.register(StripeCustomer, StripeCustomerAdmin)

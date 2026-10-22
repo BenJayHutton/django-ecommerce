@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils import timezone
 from django.shortcuts import reverse
-from tags.models import Tag
+from django.utils import timezone
 
+from tags.models import Tag
 User = get_user_model()
 
 
@@ -13,6 +13,7 @@ class BlogManagerQuerySet(models.query.QuerySet):
 
 
 class BlogManager(models.Manager):
+    # overriding get_queryset so we can use the queryset above
     def get_queryset(self):
         return BlogManagerQuerySet(self.model, using=self._db)
 

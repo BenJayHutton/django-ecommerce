@@ -7,22 +7,28 @@ from django.db import models
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
-from random import randint
 
+import random, string
+
+length = 32
+random_string = ''.join(random.choices(string.ascii_letters+string.digits+string.punctuation, k=length))
 DEFAULT_ACTIVATION_DAYS = getattr(settings, "DEFAULT_ACTIVATION_DAYS", 7)
-verify_txt = get_template("registration/emails/verify.txt")
-verify_html = get_template("registration/emails/verify.html")
 
 
 class UserManager(BaseUserManager):
-    def create_user(
-            self,
-            email,
-            full_name=None,
-            password=None,
-            is_active=True,
-            is_staff=False,
-            is_admin=False):
+    def new_or_create(self, email):
+        qs = self.get_queryset().filter(email=email)
+        created = False
+        if qs.count() == 1:
+            obj = qs.first()
+        else:
+            user_obj = GuestEmail.objects.filter(email=email)
+            if user_obj:
+                obj = self.create_user(email=email, password=random_string)
+                created = True
+        return obj, created
+
+    def create_user(self, email, full_name=None, password=None, is_active=True, is_staff=False, is_admin=False):
         if not email:
             raise ValueError("users must have an email address")
         if not password:
@@ -36,7 +42,7 @@ class UserManager(BaseUserManager):
         user_obj.staff = is_staff
         user_obj.admin = is_admin
         user_obj.is_active = is_active
-        user_obj.save(using=self._db)
+        user_obj.save()
         return user_obj
 
     def create_staffuser(self, email, full_name=None, password=None):
@@ -64,12 +70,11 @@ class User(AbstractBaseUser):
     full_name = models.CharField(max_length=255, blank=True, null=True)
     guest = models.BooleanField(default=True)
     is_active = models.BooleanField(default=False)
-    staff = models.BooleanField(default=False)  # Staff user, not super user
-    admin = models.BooleanField(default=False)  # Superuser
-    timestamp = models.DateTimeField(default=timezone.now)
+    staff = models.BooleanField(default=False)
+    admin = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
 
     objects = UserManager()
 
@@ -120,6 +125,7 @@ class EmailActivationQuerySet(models.query.QuerySet):
 
 
 class EmailActivationManager(models.Manager):
+     # overriding get_queryset so we can use the queryset above
     def get_queryset(self):
         return EmailActivationQuerySet(self.model, using=self._db)
 
@@ -138,8 +144,8 @@ class EmailActivation(models.Model):
     activated = models.BooleanField(default=False)
     forced_expired = models.BooleanField(default=False)
     expires = models.IntegerField(default=7)  # expires in x days
-    timestamp = models.DateTimeField(default=timezone.now)
-    update = models.DateTimeField(default=timezone.now)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    update = models.DateTimeField(auto_now=True)
 
     objects = EmailActivationManager()
 
@@ -176,7 +182,7 @@ class EmailActivation(models.Model):
             if self.key:
                 base_url = getattr(settings, 'BASE_URL', None)
                 key_path = reverse(
-                    "accounts:email-activate",
+                    "account:email-activate",
                     kwargs={
                         'key': self.key})
                 path = "{base}{path}".format(base=base_url, path=key_path)
@@ -184,10 +190,8 @@ class EmailActivation(models.Model):
                     'path': path,
                     'email': self.email,
                 }
-                txt_ = get_template(
-                    "registration/emails/verify.txt").render(context)
-                html_ = get_template(
-                    "registration/emails/verify.html").render(context)
+                txt_ = get_template("registration/emails/verify.txt").render(context)
+                html_ = get_template("registration/emails/verify.html").render(context)
                 subject = '1-Click Email Activation'
                 from_email = settings.DEFAULT_FROM_EMAIL
                 recipient_list = [self.email]
@@ -203,11 +207,28 @@ class EmailActivation(models.Model):
         return False
 
 
+class GuestEmailManager(models.Manager):
+    def new_or_get(self, request, email):
+        session_key = request.session.session_key
+        created = False
+        qs = self.get_queryset().filter(email=email, session_key=session_key).first()
+
+        if qs:
+            return qs, created
+        else:
+            qs = self.create(email=email, session_key=session_key)
+            created = True
+            return qs, created
+
+
 class GuestEmail(models.Model):
     email = models.EmailField()
+    session_key = models.CharField(max_length=255, null=True, blank=True)
     active = models.BooleanField(default=True)
-    updated = models.DateTimeField(default=timezone.now)
-    timestamp = models.DateTimeField(default=timezone.now)
+    updated = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    objects = GuestEmailManager()
 
     def __str__(self):
         return self.email
