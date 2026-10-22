@@ -32,8 +32,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls', namespace='accounts'), name='accounts'),
     path('accounts/', include("accounts.password.urls")),
     path('analytics/', include(("analytics.urls", "analytics"), namespace='analytics')),
-    path('api/', include('api.urls', namespace='api')),
-    path('api/v2/', include('ecommerce.routers', namespace='api_v2')),
     path('billing/', include(("billing.urls", "billing"), namespace='billing')),
     path('blog/', include(("blog.urls", "blog"), namespace='blog')),
     path('cart/', include(("carts.urls", "blog"), namespace='cart')),
@@ -52,6 +50,5 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    from django.conf.urls.static import static
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    print("urlpatterns", urlpatterns)
+     from django.conf.urls.static import static
+     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

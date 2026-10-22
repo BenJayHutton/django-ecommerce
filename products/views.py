@@ -1,7 +1,3 @@
-from rest_framework import authentication, generics, permissions
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
@@ -12,97 +8,11 @@ from django.views.generic import (
     DetailView
 )
 
-from api.mixins import (
-    StaffEditorPermissionMixin,
-    UserQuerySetMixin
-    )
-
 from analytics.mixins import ObjectViewedMixin
 from carts.models import Cart
 
 from .models import Product
-from .serializers import ProductSerializer
 from .forms import ProductForm
-
-
-from api.authentication import TokenAuthentication
-
-class ProductListCreateAPIView(
-    UserQuerySetMixin,
-    StaffEditorPermissionMixin,
-    generics.ListCreateAPIView
-    ):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-
-    def perform_create(self, serializer):
-        title = serializer.validated_data.get('title')
-        description = serializer.validated_data.get('description') or None
-        if description is None:
-            description = title
-        serializer.save(user=self.request.user, description=description)
-
-
-class ProductDetailAPIView(
-    StaffEditorPermissionMixin,
-    generics.RetrieveAPIView
-    ):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-
-
-class ProductUpdateAPIView(
-    StaffEditorPermissionMixin,
-    generics.RetrieveUpdateAPIView
-    ):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    lookup_field = 'pk'
-
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        if not instance.description:
-            instance.description = instance.title
-
-
-class ProductDestroyAPIView(
-    StaffEditorPermissionMixin,
-    generics.DestroyAPIView
-    ):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    lookup_field = 'pk'
-
-    def perform_destroy(self, instance):
-        # instance
-        super().perform_destroy(instance)
-
-
-
-@api_view(['GET', 'POST'])
-def product_alt_list_view(request, pk=None, *args, **kwargs):
-    method = request.method
-
-    if method == 'GET':
-        if pk is not None:
-            # detail view
-            obj = get_object_or_404(Product, pk=pk)
-            data = ProductSerializer(obj, many=False).data
-            return Response(data)
-        queryset = Product.objects.all()
-        data = ProductSerializer(queryset, many=True).data
-        return Response(data)
-    if method == 'POST':
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            title = serializer.validated_data.get('title')
-            description = serializer.validated_data.get('description')
-            if description is None:
-                description = title
-            serializer.save(description=description)
-            return Response(serializer.data)
-        else:
-            return Response({"error":serializer.errors})
 
 
 class ProductCreateView(CreateView):
