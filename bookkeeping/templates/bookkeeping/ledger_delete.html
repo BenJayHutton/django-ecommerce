@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<form action="." method="post">
+    {% csrf_token %}
+    <h3 class="h-3">Do you want to delete "{{object.transaction_date}} - {{object.narrative}} "</h3>
+    <input class="p-2" type="submit" value="Yes" /> <a class="p-2" href="{{object.get_absolute_url}}">Cancel</a>
+</form>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="px-16 py-6 bg-gray-100 table-responsive">
+    {% if request.user.is_admin %}
+    <div class="p-2">
+        <a class="block" href="{% url 'bookkeeping:cashbook' %}">Cashbook</a>
+        <a class="block" href="{% url 'bookkeeping:sales_ledger' %}">Sales Ledger</a>
+        <a class="block" href="{% url 'bookkeeping:purchase_ledger' %}">Purchase Ledger</a>
+        <a class="block" href="{% url 'bookkeeping:vat_ledger' %}">Vat ledger</a>
+        <a class="block" href="{% url 'bookkeeping:capital_ledger' %}">Capital ledger</a>
+        <a class="block" href="#">Payables</a>
+        <a class="block" href="#">Receivables</a>
+        
+    </div>
+ {% endif %}
+</main>
+{% endblock %}

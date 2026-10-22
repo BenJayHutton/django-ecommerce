@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-sm col-md-4 col-lg-4 my-3">
+    <a href="{{object.get_ledger_url}}"><< Back</a>
+    <div class="col-sm col-md-4 col-lg-4 my-3">
+        User: {{object.user}} <br>
+        Date: {{object.transaction_date}}<br>
+        Amount: {{object.amount}}<br>
+    </div>
+    <a href="{{object.update_ledger_url}}"><button class="btn-success">Edit</button></a>
+    <a href="{{object.delete_ledger_url}}"><button class="btn-danger">Delete</button></a>
+</div>
+{% endblock %}

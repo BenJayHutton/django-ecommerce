@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="px-16 py-6 bg-gray-100 table-responsive">
+    {% if request.user.is_admin %}
+    <h1 class="text-center">{{ledger_title}}</h1>
+    <a class="block" href="{% url 'bookkeeping:home' %}"><< Accounting</a><br>
+    <a class="block" href="{{ create_ledger_url }}"><< Create Entry</a><br>
+    <table>
+        <tr class="border-b-2 border-black">
+            <th>Debit</th>
+            <th>Credit</th>
+        </tr>
+        <tr>
+            <td class="p-2 border-r-2 border-black">
+                {% for object in debit_transactions %}
+                <a href="{{ object.get_absolute_url }}"><button class="btn">View</button></a>
+                {{object.transaction_date}}: {{object.narrative}} - £{{object.amount}} <br>
+                {% endfor %}
+            </td>
+            <td class="p-2 border-l-2 border-black">
+                {% if credit_transactions %}
+                {% for object in credit_transactions %}
+                <a href="{{ object.get_absolute_url }}"><button class="btn">View</button></a>
+                {{object.transaction_date}}: {{object.narrative}} - £{{object.amount}} <br>
+                {% endfor %}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+ {% endif %}
+</main>
+{% endblock %}
