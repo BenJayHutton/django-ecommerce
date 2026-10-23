@@ -314,7 +314,6 @@ def checkout_done_view(request):
         "title": "Thank you"
     }
     for key, value in request.session.items():
-        print(f"checkout_done_view request.session.items() {key} {value}")
         if key == 'order_obj':
             order_obj = Order.objects.get(order_id=value)
             context["order_obj"] = order_obj

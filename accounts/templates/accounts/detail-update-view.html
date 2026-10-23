@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content%}
 <div class="px-16 py-6 bg-gray-100">
+  <a href="{% url 'account:home' %}"><< Back to Account Page</a>
   <header>
     <h1 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Account Details</h1>
   </header>
@@ -12,7 +13,7 @@
       {{ form.as_p  }}
       <label for="email">Email</label>
       <input type="text" id="email" class="form-control" value="{{ request.user.email }}" disabled="disabled"><br/>
-      <button type="submit" class="my-3 btn btn-default">Save</button>
+      <button type="submit" class="btn bg-green-500 text-gray-100 hover:text-gray-500">Save</button>
       <a class="btn" href="{% url 'password_change' %}">Change Password</a>
     </form>
   </div>
