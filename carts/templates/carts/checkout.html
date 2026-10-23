@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<script src="https://js.stripe.com/v3/"></script>
 <main class="px-16 py-6 bg-gray-100">
-    {% if not billing_profile %}
+    {% if not billing_profile or not billing_profile.email %}
     <div class="row text-centre">
         <div class="col-12 col-md-6">
             <div>>Login</div>
             {% include 'accounts/snippets/form.html' with form=login_form next_url=request.build_absolute_uri %}    
         </div>    
         <div class="col-12 col-md-6">
-            {% url "accounts:guest_register" as guest_register_url %}
-            Continue as guest
-            {% include 'accounts/snippets/form.html' with form=guest_form next_url=request.build_absolute_uri action_url=guest_register_url %}
+            <div class="p-4">
+                {% url "cart:checkout" as guest_register_url %}
+                Continue as guest (alternative)
+                {% include 'accounts/snippets/form.html' with form=guest_form next_url=request.build_absolute_uri action_url=guest_register_url %}
+            </div>
         </div>
     </div>
     {% else %}
@@ -22,7 +23,7 @@
         <div class="flex justify-normal">
             <div class="p-4">
                 {% url "checkout_address_create" as checkout_address_create %}
-                {% include 'addresses/form.html' with form=address_form next_url=request.build_absolute_uri action_url=checkout_address_create address_type='shipping' %}
+                {% include 'addresses/address_form.html' with form=address_form next_url=request.build_absolute_uri action_url=checkout_address_create address_type='shipping' %}
             </div>
             <div class="p-4">
                 {% url "checkout_address_reuse" as checkout_address_reuse %}
@@ -36,14 +37,13 @@
         <div class="flex justify-normal">
             <div class="p-4">
                 {% url "checkout_address_create" as checkout_address_create %}
-                {% include 'addresses/form.html' with form=address_form next_url=request.build_absolute_uri action_url=checkout_address_create address_type='billing' %}
+                {% include 'addresses/address_form.html' with form=address_form next_url=request.build_absolute_uri action_url=checkout_address_create address_type='billing' %}
             </div>
             <div class="p-4">
                 {% url "checkout_address_reuse" as checkout_address_reuse %}
                 {% include 'addresses/previous_addresses.html' with address_qs=address_qs next_url=request.build_absolute_uri address_type='billing' action_url=checkout_address_reuse %}
             </div>
         </div>
-
     </div>
     {% else %}
     <div class="col-4">
@@ -58,30 +58,46 @@
             {% endfor %} 
         </div>
         <div class="pb-1">
-            Shipping address {{ object.shipping_address.get_address}}
+            Shipping address {{ object.shipping_address.get_address}} <a class="font-bold text-blue-400" href="{% url 'checkout_address_change' %}?next={{ request.build_absolute_uri }}&address_type=shipping">Change address</a>
         </div>
         <div class="pb-1">
-            Billing address {{ object.billing_address.get_address}}
+            Billing address {{ object.billing_address.get_address}} <a class="font-bold text-blue-400" href="{% url 'checkout_address_change' %}?next={{ request.build_absolute_uri }}&address_type=billing">Change address</a>
         </div>
         <div class="pb-1">
-            Total: £ {{ object.total|floatformat:2}}
-        </div>
-        <div class="pb-1">
-            Vat: £ {{ object.tax|floatformat:2}}
+            Subtotal: £ {{ object.subtotal|floatformat:2}}
         </div>
         <div class="pb-1">
             Shipping: £ {{ object.shipping_total|floatformat:2}}
         </div>
         <div class="pb-1">
-            Grand Total: £ {{ object.sub_total|floatformat:2}}
+            Vat: £ {{ object.vat|floatformat:2}}
+        </div>
+        <div class="pb-1">
+            Total: £ {{ object.total|floatformat:2}}
         </div>                
     </div>
     <div class="col-4" id="paypal-button-container"></div>
     <div>
-        <form action="{% url 'payment:StripeCharge' object.cart.id object.order_id billing_profile.email %}" method="POST">
-            {% csrf_token %}
-            <button type="submit" id="checkout-button" class="btn btn-outline-primary">Pay With Stripe</button>
-        </form>
+        <button type="button" id="checkout" class="btn btn-outline-primary">Pay With Stripe</button>
+        <script>
+        document.getElementById("checkout").addEventListener("click", async function(event) {
+            event.preventDefault();
+            const response = await fetch("{% url 'payment:StripeCharge' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Accept": "application/json",
+                },
+            });
+            const data = await response.json();
+            if (data.error) {
+                alert(data.error);
+                console.log("data: " + JSON.stringify(data));
+                return;
+            }
+            window.location.href = data.url;
+        });
+        </script>
     </div>
     {% endif %}
     {% endif %}

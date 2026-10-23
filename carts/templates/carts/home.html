@@ -7,47 +7,49 @@
   {% if cart_obj.cart_items.exists %}
   <div class="mt-8 grid lg:grid-cols-3 gap-10">
     {% for cart_item in cart_obj.cart_items.all %}
-    <div class="border-b-2 border-gray-300 mb-4 cart-product" id="{{cart_item.id}}">
-      <form class="form-product-ajax" method="POST" action="{% url 'cart:update' %}" data-endpoint="{% url 'cart:update' %}" class="form">
+    <div id="{{cart_item.id}}" class="border-b-2 border-gray-300 mb-4 cart-product">
+      <form class="form-product-ajax" method="POST" action="{% url 'cart:home' %}" data-endpoint="{% url 'cart:home' %}" class="form">
         {% csrf_token %}
         <div>
           <a href="{{ cart_item.product.get_absolute_url }}">{{ cart_item.product.title }}</a>
-
           <div> 
             <span>Quantity</span>
-            <input type="number" class="border border-red-200 rounded p-2 mb-2" name="product_quantity" value="{{ cart_item.quantity }}" min="0" max="{{cart_item.product.quantity}}">
+            <input type="number" id="product_quantity" name="product_quantity" value="{{ cart_item.quantity }}" min="0" max="{{cart_item.product.quantity}}" class="border border-red-200 rounded p-2 mb-2">
           </div>
-          
-          <div>
-            £ <span id="cart_item_price">{{ cart_item.total|floatformat:2 }}</span>
+          <div id="cart_item_price_{{cart_item.id}}">
+            £ <span>{{ cart_item.product.price|floatformat:2}} each</span>
           </div>
-          
-          <input type="hidden" name="cart_item_id" value="{{cart_item.id}}">
+          <input type="hidden" id="cart_item_id" name="cart_item_id" value="{{cart_item.id}}">
           <input type="hidden" id="weight_in_grams" name="weight_in_grams" value="{{ cart_item.product.weight_in_grams}}">
-        </div>
-        <div class="mb-2 flex justify-normal">
-          <span>{% include 'carts/snippets/remove-cart-item.html' with cart_item=cart_item %}</span>
-          <span>{% include 'carts/snippets/update-cart-item.html' with cart_item=cart_item %}</span>
+          <div>
+            <span>{% include 'carts/snippets/update-cart-item.html' with cart_item=cart_item %}</span>
+          </div>
         </div>
       </form>
+      <form action="{% url 'cart:home' %}" method="POST" >
+        {% csrf_token %}
+        <input type="hidden" id="cart_item_id" name="cart_item_id" value="{{cart_item.id}}">
+        <span>{% include 'carts/snippets/remove-cart-item.html' with cart_item=cart_item %}</span>
+      </form>
+      
     </div>
     {% endfor %}
     <div>
-      <div>
-        Total £ <span class="cart-total">{{ cart_obj.total|floatformat:2 }}</span>
+      <div id="subtotal">
+        Subtotal £ <span class="cart-total">{{cart_obj.subtotal|floatformat:2}}</span>
+      </div>
+      <div id="shipping">
+        Shipping £ <span class="cart-shipping">{{cart_obj.shipping|floatformat:2}}</span>
+      </div>      
+      <div id="vat">
+        Vat £ <span class="cart-vattotal">{{cart_obj.vat|floatformat:2}}</span>
+      </div>
+      <div id="total">
+        Total £ <span class="cart-subtotal"> {{cart_obj.total|floatformat:2}}</span>
       </div>
       <div>
-        Vat £ <span class="cart-vattotal">{{ cart_obj.vat|floatformat:2 }}</span>
+        <a class="btn" href="{% url 'cart:checkout' %}">checkout</a>
       </div>
-      <div>
-        Shipping £ <span class="cart-shipping">{{ cart_obj.shipping|floatformat:2 }}</span>
-      </div>
-      <div>
-        Subtotal £ <span class="cart-subtotal"> {{ cart_obj.subtotal|floatformat:2 }}</span>
-      </div>
-      <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" >
-        <a href="{% url 'cart:checkout' %}">checkout</a>
-      </button>
     </div>
   </div>
   {% else %}
@@ -56,10 +58,59 @@
       Basket is empty
     </p>
     <p class="m-2">
-      <a href="{% url 'products:list' %}" class="btn btn-success mb-2"> <i class="fa fa-chevron-left" aria-hidden="true"></i><i class="fa fa-chevron-left" aria-hidden="true"></i> Products</a>
-    </p>
-    
+      <a href="{% url 'products:list' %}" class="btn btn-success mb-2"> <i class="fa fa-chevron-left" aria-hidden="true"></i><i class="fa fa-chevron-left" aria-hidden="true"></i> << Products</a>    
   </div>
   {% endif %}
 </main>
+
+<script>
+$(document).ready(function(){
+  var formData = $(".form-product-ajax")
+
+  formData.on('submit', function(event) {
+        event.preventDefault();
+        var thisForm = $(this)
+        var cartSubmitBtn = event.originalEvent.submitter.attributes[3].value;
+        var url = "{% url 'cart:home' %}"
+        var method = "POST"
+        var data = thisForm.serialize();
+
+        if(cartSubmitBtn == "cart_item_update"){
+            data = data+"&"+cartSubmitBtn+"=true"
+        }else if(cartSubmitBtn == "product_item_remove"){
+            data = data+"&"+cartSubmitBtn+"=true"
+        }else if(cartSubmitBtn == "cart_item_add"){
+            data = data+"&"+cartSubmitBtn+"=true";
+        }else if(cartSubmitBtn == "cart_item_remove"){
+            data = data+"&"+cartSubmitBtn+"=true"
+        }
+        upDateOrder(url, method, data, thisForm)
+    });
+
+    function upDateOrder(url, method,formData, thisForm){
+        $.ajax({
+            url: url,
+            method: method,
+            data:formData,
+            success: function(data){
+              parsedData = JSON.parse(data);
+              console.log(parsedData);
+              $("#cart_item_price_"+parsedData.cart_item_id).empty();
+              $("#cart_item_price_"+parsedData.cart_item_id).append("£ " + parsedData.cart_item_price.toFixed(2) +" each");
+              $("#subtotal").empty();
+              $("#subtotal").append("Subtotal £ " + parsedData.sub_total.toFixed(2));
+              $("#vat").empty();
+              $("#vat").append("Vat £ " + parsedData.vat.toFixed(2));
+              $("#shipping").empty();
+              $("#shipping").append("Shipping £ " + parsedData.shipping.toFixed(2));
+              $("#total").empty();
+              $("#total").append("Total £ " + parsedData.total.toFixed(2));
+            },
+            error: function(error){
+                console.log("error", error);
+            }
+        })
+    }
+});
+</script>
 {% endblock %}

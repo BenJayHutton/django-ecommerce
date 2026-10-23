@@ -9,6 +9,7 @@ from django.utils import timezone
 from addresses.models import Address
 from billing.models import BillingProfile
 from carts.models import Cart
+from ecommerce.utils import unique_order_id_generator
 from products.models import Product
 
 import datetime
@@ -111,6 +112,7 @@ class OrderManager(models.Manager):
         if qs.count() == 1:
             obj = qs.first()
         else:
+            # order_id = unique_order_id_generator(self)
             obj = self.model.objects.create(billing_profile=billing_profile, cart=cart_obj, session_key=session_key)
             created = True
         return obj, created
@@ -118,7 +120,7 @@ class OrderManager(models.Manager):
     def email_order(self, order_id):
         qs = self.get_queryset().filter(order_id=order_id)
         for order in qs:
-            subject = "SweetSweetSwag.com, order confirmation: " + order.order_id
+            subject = f"SweetSweetSwag.com, order confirmation: {order.order_id}"
             try:
                 cus_name = order.billing_profile.user.full_name
             except BaseException:
@@ -207,7 +209,7 @@ class Order(models.Model):
     billing_address = models.ForeignKey(Address, default=None, related_name='billing_address', null=True, blank=True, on_delete=models.SET_NULL)
     cart = models.ForeignKey(Cart, default=None, null=True, blank=True, on_delete=models.SET_NULL)
     session_key = models.CharField(max_length=255, null=True, blank=True)
-    order_id = models.CharField(max_length=120, unique=True, blank=True, null=True)
+    order_id = models.CharField(max_length=120, unique=True)
     status = models.CharField(max_length=120, default='created', choices=ORDER_STATUS_CHOICES)
     total = models.DecimalField(default=0, max_digits=12, decimal_places=4)
     vat = models.DecimalField(default=0, max_digits=12, decimal_places=4)

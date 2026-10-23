@@ -61,6 +61,7 @@ class CartHomeView(View):
         
         if cart_item_add:
             self.add_to_cart(request)
+            print("CartHomeView,self.add_to_cart(request)")
         if cart_item_update:
             self.update_cart(request)
         if cart_item_remove:
@@ -68,13 +69,12 @@ class CartHomeView(View):
         return redirect("cart:home")
     
     def add_to_cart(self, request):
+        print("CartHomeView, def add_to_cart(request)")
         session_obj = request.session
         cart_id = session_obj["cart_id"]
         product_quantity = int(request.POST.get('product-quantity'))
         product_id = request.POST.get("product_id")
         json_data = {}
-        cart_item_id = None
-        cart_item_price = None
         try:
             product_obj = Product.objects.get(id=product_id)
         except Exception as E:
@@ -93,14 +93,14 @@ class CartHomeView(View):
         try:
             cart_item_obj, cart_item_obj_created = CartItem.objects.new_or_get(request, product_obj=product_obj, product_quantity=product_quantity)
             print(f"cart item add to cart obj {type(cart_item_obj)} {cart_item_obj}")
-            for cartitem in cart_item_obj:
-                cart_item_id = cartitem.id
-                cart_item_price = cartitem.total
-                cart_obj.cart_items.add(cartitem)
-                cartitem.calculate_cart_item_subtotal(product_quantity=product_quantity)
-                cartitem.calculate_cart_item_vat()
-                cart_obj.update_total(cart_item=cartitem, currier=currier_obj)
-                request.session['cart_item_count'] = cart_obj.cart_items.count()
+            
+            cart_item_id = cart_item_obj.id
+            cart_item_price = cart_item_obj.total
+            cart_obj.cart_items.add(cart_item_obj)
+            cart_item_obj.calculate_cart_item_subtotal(product_quantity=product_quantity)
+            cart_item_obj.calculate_cart_item_vat()
+            cart_obj.update_total(cart_item=cart_item_obj, currier=currier_obj)
+            request.session['cart_item_count'] = cart_obj.cart_items.count()
         except Exception as E:
             project_debug_log.exception(f'[{now}] CartHomeView.add_to_cart: error getting cart_item_obj {type(E)} - {E}')        
         json_data = {
@@ -130,7 +130,7 @@ class CartHomeView(View):
             cart_item_obj.calculate_cart_item_subtotal(product_quantity=product_quantity)
             cart_item_obj.calculate_cart_item_vat()
             print(f"update cart, currier_obj {type(currier_obj)} {currier_obj}")
-            # cart_obj.update_total(cart_item=cart_item_obj, currier=currier_obj)
+            cart_obj.update_total(cart_item=cart_item_obj, currier=currier_obj)
             request.session['cart_item_count'] = cart_obj.cart_items.count()
         except Exception as E:
             project_debug_log.debug(f'[{now}] CartHomeView update: error raised {type(E)} - {E}')
@@ -314,6 +314,7 @@ def checkout_done_view(request):
         "title": "Thank you"
     }
     for key, value in request.session.items():
+        print(f"checkout_done_view request.session.items() {key} {value}")
         if key == 'order_obj':
             order_obj = Order.objects.get(order_id=value)
             context["order_obj"] = order_obj
