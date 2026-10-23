@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
-<main class="px-16 py-6 bg-gray-100">
-  <header>
+<main class="product-layout px-16 py-6 bg-gray-100">
+  <header class="product-detail:header">
     <h1>{{ product_obj.title }}</h1>
   </header>
-  <div class="mt-8 grid lg:grid-cols-2 gap-10">
+  <div id="" class=" mt-8 grid lg:grid-cols-2 gap-10">
     <div class="p-2">
-      <img src="{{product_obj.image.url}}" alt="{{ product_obj.title}} logo" class="w-48 h-48">
+      <img src="{{product_obj.image.url}}" alt="{{ product_obj.title}} logo" class="h-48 w-36">
       {% if product_obj.quantity > 0 %}
-        {{ product_obj.quantity }} available
+        {{ product_obj.quantity }} available <br>
+        £ {{product_obj.price|floatformat:2}}
         {% include 'products/snippets/update-cart.html' with product_obj=product_obj cart_item_obj=cart_item_obj cart_obj=cart_obj %}
         {% if user.is_admin %}
           <a class="p-2" href="{% url 'products:update' product_obj.slug %}">Edit</a>
@@ -18,11 +19,11 @@
         <p>Not available</p>
       {% endif %}
     </div>
-    <div class="p-2">
+    <div id="product-details-description" class="p-2">
       {{product_obj.description}}
     </div>
 
-    <div>
+    <div id="product-tags">
       {% for tag in product_obj.tags.all %}
       #{{tag.name}}
       {% endfor %}

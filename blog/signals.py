@@ -1,8 +1,9 @@
+from django.dispatch import Signal
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from ecommerce.utils import unique_slug_generator
-from .models import Blog
 
+from .models import Blog
 
 @receiver(pre_save, sender=Blog)
 def blog_pre_save_receiver(sender, instance, **kwargs):

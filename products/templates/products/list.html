@@ -1,16 +1,33 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content%}
-<main class="px-16 py-6 bg-gray-100">
+<main class="px-4 bg-gray-100">
   <header>
-    <h1 class="text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Shop</h1>
+  <h1 class="p-2 text-lg font-semibold border-b border-gray-200 text-secondary-200 md:text-3xl lg:text-5xl">Shop</h1>
   </header>
+  {% for c in categories %}
+  <a href="/products/?category={{ c.slug }}">{{c.name }}</a>
+  {% endfor %}
 
-  <div>
-    <div class="mt-8 grid lg:grid-cols-3 gap-10">
-      {% for product in product_list %}
-        {% include 'products/snippets/card.html' with product_obj=product cart_item_obj=cart_item_obj %}
-      {% endfor %}
-    </div>
+  <div id="tag_menu" class="p-4"> 
+    {% for tag in tag_obj %}
+    <button class="searchtag" id="searchtag-{{tag}}" value="{{tag}}">
+      <a id="{{tag}}" href="{% url 'search:tag' %}?tag={{tag}}">{{tag}}</a>
+    </button> |
+    {% endfor %}
+  </div>
+
+  <div id="sub_tag_menu" class="p-4">
+    <hr>
+    {% for sub_tag in sub_tag_obj %} 
+        <a href="{% url 'search:tag' %}?tag={{sub_tag}}">{{sub_tag}}</a> | 
+    {% endfor %}
+  </div>
+
+  <div id="products_by_tag" class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-6">
+  {% for product in object_list %}
+    {% include 'products/snippets/card.html' with product_obj=product cart_item_obj=cart_item_obj %}
+  {% endfor %}
   </div>
 </main>
 {% endblock %}

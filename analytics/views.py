@@ -3,7 +3,9 @@ from django.http import JsonResponse
 from django.views.generic import TemplateView, View, ListView
 from django.shortcuts import render
 from django.utils import timezone
-from datetime import datetime
+
+import datetime
+
 from orders.models import Order
 from products.models import Product
 from billing.models import BillingProfile
@@ -149,13 +151,12 @@ class SalesView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(SalesView, self).get_context_data(*args, **kwargs)
         qs = Order.objects.all().by_weeks_range(weeks_ago=10, number_of_weeks=10)
-        start_date = timezone.localtime(timezone.now())
+        start_date = timezone.now().date()
         today_data = qs.by_range(
-            start_date).get_sales_breakdown()
+            start_date=timezone.now().date()).get_sales_breakdown()
         context['today'] = today_data
         context['this_week'] = qs.by_weeks_range(
             weeks_ago=1, number_of_weeks=1).get_sales_breakdown()
         context['last_four_weeks'] = qs.by_weeks_range(
             weeks_ago=5, number_of_weeks=4).get_sales_breakdown()
-        context['title'] = "Sales Analytics"
         return context

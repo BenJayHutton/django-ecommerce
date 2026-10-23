@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="px-16 py-6 bg-gray-100">
+    <div class="flex justify-normal">
+        <form action="{% url 'checkout_address_create' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="id_shipping_type" value="{{ address_type }}" />
+            <input type="hidden" name="next" value="{{ next }}" />
+            <input type="submit" value="Save" class="btn-success"/>
+        </form>
+        {% if address_qs %}
+        <div class="mt-4">
+            <h4>Use a previously saved address</h4>
+            {% include 'addresses/previous_addresses.html' with address_qs=address_qs next_url=next address_type=address_type action_url=action_url %}
+        </div>
+        {% endif %}
+    </div>
+</main>
+
+{% endblock %}

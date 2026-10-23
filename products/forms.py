@@ -11,9 +11,9 @@ class ProductForm(forms.ModelForm):
         fields = ['title', 'description', 'price', 'price', 'image', 'featured', 'quantity', 'weight_in_grams', 'tags', 'active', 'is_digital']
         widgets = {
             "date": forms.SelectDateWidget(
-                years=range(2015,2040),
+                years=range(2015,2023),
                 attrs={
                     "value": now
                 }
-            ),
+            )
         }

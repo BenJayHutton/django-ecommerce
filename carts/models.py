@@ -20,13 +20,22 @@ class CartItemManagerQuerySet(models.query.QuerySet):
    
 
 class CartItemManager(models.Manager):
-    
+
     def new_or_get(self, request, product_obj=None, product_quantity=None):
         created = False
         session_key = request.session.session_key
-        obj = CartItem.objects.filter(session_key=session_key, product=product_obj, is_active=True)
+        obj = self.get_queryset().filter(
+            session_key=session_key,
+            product=product_obj,
+            is_active=True,
+        ).first()
+
         if obj is None:
-            obj = CartItem.objects.create(session_key=session_key, product=product_obj, quantity=product_quantity)
+            obj = self.model.objects.create(
+                session_key=session_key,
+                product=product_obj,
+                quantity=product_quantity,
+            )
             created = True
         return obj, created
     
@@ -76,18 +85,22 @@ class CartManager(models.Manager):
     def new_or_get(self, request):
         session_key = request.session.session_key
         created = False
-        cart_obj = self.get_queryset().filter(session_key=session_key, is_active=True)
-        if cart_obj.exists():
-            for cart_obj in cart_obj:
-                if request.user.is_authenticated and cart_obj.user is None:
-                    cart_obj.user = request.user
-                    cart_obj.save()
-                elif request.user.is_authenticated:
-                    cart_obj.session_key=session_key
-                    cart_obj.save()
+        cart_obj = self.get_queryset().filter(
+            session_key=session_key,
+            is_active=True,
+        ).order_by('-id').first()
+
+        if cart_obj is not None:
+            if request.user.is_authenticated and cart_obj.user_id is None:
+                cart_obj.user = request.user
+                cart_obj.save(update_fields=['user'])
+            elif request.user.is_authenticated:
+                cart_obj.session_key = session_key
+                cart_obj.save(update_fields=['session_key'])
         else:
             cart_obj = self.model.objects.create(session_key=session_key)
             created = True
+
         request.session['cart_id'] = cart_obj.id
         return cart_obj, created
 
@@ -99,7 +112,7 @@ class CartManager(models.Manager):
         total = Decimal(0)
         for cart_item in cart_obj.cart_items.all():
             vat += cart_item.vat
-            subtotal += cart_item.total
+            subtotal += cart_item.subtotal
         if vat < 0.01:
             vat = 0
         total = subtotal + shipping_cost + vat

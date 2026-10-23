@@ -1,4 +1,4 @@
-<form class="form-product-ajax" method="POST" action="{% url 'cart:update' %}" data-endpoint="#" {% if request.user.is_authenticated %} data-user="abc" {% endif %}>
+<form class="form-product-ajax" method="POST" action="{% url 'cart:home' %}" data-endpoint="#" {% if request.user.is_authenticated %} data-user="abc" {% endif %}>
     {% csrf_token %}
     <input type="hidden" class="product_id" name="product_id" value="{{ product_obj.id }}" {% if product_obj.is_digital %} data-is-digital="true"{% endif %}>
     <input type="hidden" class="weight_in_grams" name="weight_in_grams" value="{{ product_obj.weight_in_grams}}">
@@ -12,13 +12,13 @@
         {% if product_obj in cart_item_obj %}
             <a id="in-cart" class="btn btn-success in-cart" href="{% url 'cart:home' %}">In cart</a>
         {% else %}
-            <select class="btn btn-primary" name="product_quantity">
+            <select name="product-quantity" class="btn btn-primary">
                 {% for i in " "|rjust:product_obj.quantity %}
                 <option class="product_quantity_option" value="{{forloop.counter}}">{{forloop.counter}}</option>
                 {% endfor %}
             </select>
-            <button class="btn btn-success btn-add cart_item_add" type="submit" name="cart_item_add" value="true"> Add </button>
+            <button onclick="this.form.submitted=this.value;" class="btn btn-success btn-add cart_item_add" type="submit" name="cart_item_add" value="true"> Add </button>
         {% endif %}
-        </span>
+    </span>
     {% endif %}
 </form>

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content%}
+
+<main class="px-4 bg-gray-100">
+    <h1>Address</h1>
+
+    <div class="p-2">
+        <a href="{% url 'address:create' %}">Add address</a>
+    </div>
+    <div class=" p-4">
+        <h2>Saved addresses</h2>
+       
+        <div class="p-2">
+            {% for address in object_list %}
+            <div class="p-2">
+            {{ address.label }}: {{ address.city }}, {{address.postal_code}}
+            <a href="{% url 'address:update' address.pk %}">Edit</a>
+            <a href="{% url 'address:delete' address.pk %}">Delete</a>
+            </div>
+            {% empty %}
+            <div class="p-2">No Addressess yet</div>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+
+
+{% endblock %}

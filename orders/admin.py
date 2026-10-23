@@ -5,8 +5,10 @@ from .models import Order, ProductPurchase
 
 class OrderAdmin(admin.ModelAdmin):
     search_fields = ['order_id', 'billing_profile__email']
-    list_display = ('order_id', 'status', 'billing_profile', 'timestamp')
+    list_display = ('order_id', 'billing_profile', 'timestamp', 'status')
     list_filter = ('active', 'status')
+    ordering = ('order_id','billing_profile','timestamp',)
+
 
     class Meta:
         model = Order

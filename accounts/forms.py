@@ -99,9 +99,10 @@ class GuestForm(forms.ModelForm):
     def save(self, commit=True):
         obj = super(GuestForm, self).save(commit=False)
         if commit:
-            obj.save()
             request = self.request
             request.session['guest_email_id'] = obj.id
+            obj.session_key = request.session.session_key
+            obj.save()
         return obj
 
 

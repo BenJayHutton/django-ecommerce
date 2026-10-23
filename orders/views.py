@@ -64,7 +64,7 @@ class OrderListView(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self):
-        return Order.objects.by_request(self.request).not_created()
+        return Order.objects.by_request(self.request) #.not_created() # show all orders 
 
 
 class OrderDetailView(LoginRequiredMixin, DetailView):
@@ -84,7 +84,6 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
         qs = Order.objects.by_request(
             self.request).filter(
             order_id=self.kwargs.get('order_id'))
-        print(qs)
         if qs.count() == 1:
             return qs.first()
         raise Http404

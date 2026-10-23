@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content%}
+
+<main class="px-4 bg-gray-100">
+    <h1>Address</h1>        
+    <div class="p-4">
+        <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Save" class="btn-success"/>
+    </form>
+    {{action_urls}}
+    </div>
+</main>
+
+
+{% endblock %}
