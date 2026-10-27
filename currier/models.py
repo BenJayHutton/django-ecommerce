@@ -18,14 +18,10 @@ CURRIER_LIST = [
 class CurrierManager(models.Manager):
      
      def new_or_get(self, request, cart=None, currier="Royal Mail 2nd Class"):
+        created = False
         user = request.user
         session_key = request.session.session_key
-        created = False
-        if user.is_authenticated:
-            qs = self.get_queryset().filter(user=user, cart=cart)
-        else:
-            qs = self.get_queryset().filter(session_key=session_key, cart=cart)
-
+        qs = self.get_queryset().filter(user=user, cart=cart)
         if qs.exists():
             currier_obj = qs.first()
         else:
