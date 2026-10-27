@@ -23,6 +23,8 @@ pip-notes.md
 static/media
 static/protected
 static/admin
+static/products
+/mediafiles
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
