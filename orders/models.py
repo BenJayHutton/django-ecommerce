@@ -14,6 +14,7 @@ from products.models import Product
 
 import datetime
 import logging
+import os
 
 stripe_debugger = logging.getLogger("stripe_debugger")
 stripe_logger = logging.getLogger("stripe_logger")
@@ -133,7 +134,7 @@ class OrderManager(models.Manager):
             order_vat = order.vat
             order_shipping = order.shipping_total
             order_total = order.total
-            base_url = settings.BASE_URL
+            base_url = os.environ.get("BASE_URL")
         context = {
             'name': cus_name,
             'order_id': order_id,

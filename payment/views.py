@@ -86,12 +86,12 @@ class StripeCharge(View):
                 },
             },
         },]
-        domain = getattr(settings, 'BASE_URL', '127.0.0.1')
-        port = getattr(settings, 'PORT', '80')
+        domain = os.environ.get("BASE_URL")
+        port = os.environ.get("PORT_LOCAL")
         checkout_path = reverse('cart:checkout')
         checkout_path_success = reverse('cart:success')
-        success_url = f"{request.scheme}://{domain.rstrip('/')}:{port}{checkout_path_success}"
-        cancel_url = f"{request.scheme}://{domain.rstrip('/')}:{port}{checkout_path}"
+        success_url = f"{request.scheme}://{domain}:{port}{checkout_path_success}"
+        cancel_url = f"{request.scheme}://{domain}:{port}{checkout_path}"
         session = client.v1.checkout.sessions.create({
             "customer_email":email,
             "line_items":line_items,
