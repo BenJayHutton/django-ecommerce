@@ -113,13 +113,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = "/staticfiles/"
-STATIC_ROOT = 'staticfiles'
-MEDIA_URL = "/mediafiles/"
-MEDIA_ROOT = BASE_DIR / 'mediafiles'
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / 'media'
 
 TAILWIND_APP_NAME = 'theme'

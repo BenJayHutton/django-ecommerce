@@ -20,11 +20,8 @@ node_modules/
 _accounts/
 _payment/
 pip-notes.md
-static/media
-static/protected
-static/admin
-static/products
-/mediafiles
+static/
+media/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
