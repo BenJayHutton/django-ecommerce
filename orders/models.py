@@ -193,9 +193,9 @@ class OrderManager(models.Manager):
         msg = EmailMultiAlternatives(
         subject= subject,
         body=text_content,
-        from_email="no-reply@sweetsweetswag.com",
+        from_email="no_reply@sweetsweetswag.com",
         to=recipient_list,
-        headers={"Confirmation of order": "<mailto:cs@sweetsweetswag.com>"},
+        headers={"Confirmation of order": "<mailto:no_reply@sweetsweetswag.com>"},
         )
         try:
             msg.attach_alternative(html_content, "text/html")
