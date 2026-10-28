@@ -220,6 +220,7 @@ class Order(models.Model):
     subtotal = models.DecimalField(default=0, max_digits=12, decimal_places=4)
     active = models.BooleanField(default=True)
     meta_data = models.TextField(null=True, blank=True)
+    order_details = models.JSONField(default=dict)
     updated = models.DateTimeField(default=timezone.now)
     timestamp = models.DateTimeField(default=timezone.now)
 
