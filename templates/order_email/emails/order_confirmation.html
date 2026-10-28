@@ -49,27 +49,22 @@
 </head>
 <body>
     <div class="px-16 py-6 bg-gray-100 text-gray-500">
-        <header class="text-xl font-semibold border-b border-gray-200">
-            <p>Thank you very much for your purchase</p>
-            <p>{{ cus_items }}</p>
-            <p>total: {{order_total|floatformat:2}}</p>
-            <p>vat £{{order_tax|floatformat:2}}</p>
-            <p>shipping £{{order_shipping|floatformat:2}}</p>
-            <p>Sub total: {{order_subtotal|floatformat:2}}</p>
-            <p> Order No: {{ order_id}}</p>
-        </header>
         <div class="p-1 font-bold">
-            Hello {{ name }} <br>
+            Hello {{ name }}<br>
+            Thank you very much for your purchase<br>
+            Your order has now been received and is being processed<br>
+            If you have any queries, please contact us at shop@SweetSweetSwag.com <br>
+            quoting your order number: {{ order_id }}
         </div>
 
         <div class="p-1 font-bold">
-            Your order has now been received and is being processed<br>
-            If you have any queries, please contact us at shop@SweetSweetSwag.com <br>
-            quoting your order number, {{ order_id }}
-        </div>
-    
-        <div class="p-1 font-bold">
-            <a href="http://www.SweetSweetSwag.com/{{ order_id}}">SweetSweetSwag.com/{{ order_id}}</a>
+            {{ cus_items }}<br>
+            Subtotal: £{{order_subtotal|floatformat:2}}<br>
+            Vat £{{order_vat|floatformat:2}}<br>
+            Shipping: £{{order_shipping|floatformat:2}}<br>
+            Total: £{{order_total|floatformat:2}}<br>
+            Order No: {{ order_id}}<br>
+            Thank you <a href="http://www.SweetSweetSwag.com">SweetSweetSwag</a>
         </div>
     </div>
 </body>

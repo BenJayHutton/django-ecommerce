@@ -1,13 +1,13 @@
 Hello {{ name }}
-
-Your order has now been received and is being processed.
+Thank you very much for your purchase
+Your order has now been received and is being processed
 If you have any queries, please contact us at shop@SweetSweetSwag.com
-quoting your order number, {{ order_id }}
+quoting your order number: {{ order_id }}
 
 {{ cus_items }}
-
-tax: {{order_tax}}
-shipping: {{order_shipping}}
-total: {{order_total}}
-
+Subtotal: £{{order_subtotal|floatformat:2}}
+Vat £{{order_vat|floatformat:2}}
+Shipping: £{{order_shipping|floatformat:2}}
+Total: £{{order_total|floatformat:2}}
+Order No: {{ order_id}}
 Thank you SweetSweetSwag

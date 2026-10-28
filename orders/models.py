@@ -130,7 +130,8 @@ class OrderManager(models.Manager):
             cus_email = order.billing_profile.email
             cus_items = ""
             for cart_items in order.cart.cart_items.all():
-                cus_items = str(f"{cus_items} - {cart_items.quantity} * {cart_items.product.title}\n")
+                cus_items += str(f"{cart_items.quantity} * {cart_items.product.title}\n")
+            order_subtotal = order.subtotal
             order_vat = order.vat
             order_shipping = order.shipping_total
             order_total = order.total
@@ -139,6 +140,7 @@ class OrderManager(models.Manager):
             'name': cus_name,
             'order_id': order_id,
             'cus_items': cus_items,
+            'order_subtotal': order_subtotal,
             'order_vat': order_vat,
             'order_shipping': order_shipping,
             'order_total': order_total,
@@ -226,6 +228,9 @@ class Order(models.Model):
     class Meta:
         ordering = ['-timestamp', '-updated']
 
+    def __str__(self):
+        return self.order_id        
+
     def get_absolute_url(self):
         return reverse("orders:detail", kwargs={'order_id': self.order_id})
 
@@ -236,8 +241,6 @@ class Order(models.Model):
             return "Shipped"
         return "Shipping Soon"
 
-    def __str__(self):
-        return self.order_id
 
     def update_total(self):
         try:
