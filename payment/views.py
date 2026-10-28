@@ -4,19 +4,17 @@ import os
 import logging
 from flask import jsonify
 from django.conf import settings
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.generic import View
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.urls import reverse
 from django.utils import timezone
 
 from billing.models import BillingProfile
 from carts.models import Cart
 from orders.models import Order
-from .models import (
-    StripeCheckoutSession,
-    StripeCustomer
-    )
+from .models import (StripeCheckoutSession, StripeCustomer)
+
 now = timezone.now()
 
 stripe_api_key = settings.STRIPE_SECRET_API_KEY
@@ -64,43 +62,76 @@ class StripeCharge(View):
             line_items.append({
                 "price_data": {
                     "currency": "GBP",
-                    "unit_amount": unit_amount,
                     "product_data": {
                         "name": item.product.title,
                         "description": item.product.description,
-                    },
+                    },                    
+                    "unit_amount": unit_amount,
+                    "tax_behavior": "exclusive",
                 },
                 "quantity": int(item.quantity),
             })
-        shipping_options = [{
-            "shipping_rate_data": {
-                "type": 'fixed_amount',
-                "fixed_amount": {
-                    "amount": int(cart_obj.shipping * 100),
-                    "currency": 'GBP',
-                },
-                "display_name": 'Post Office 2nd Class',
-                "delivery_estimate": {
-                    "minimum": { "unit": "day", "value": 2},
-                    "maximum": { "unit": "day", "value": 4},
-                },
-            },
-        },]
+        shipping_rate = client.v1.shipping_rates.create({
+            "display_name": 'tandard delivery',
+            "type": "fixed_amount",
+            "fixed_amount": {
+                "amount": int(cart_obj.shipping * 100),
+                "currency": "gbp",
+             },
+            "tax_behavior": "exclusive",
+        })
+
         domain = os.environ.get("BASE_URL")
         port = os.environ.get("PORT_LOCAL")
         checkout_path = reverse('cart:checkout')
         checkout_path_success = reverse('cart:success')
         success_url = f"{request.scheme}://{domain}:{port}{checkout_path_success}"
         cancel_url = f"{request.scheme}://{domain}:{port}{checkout_path}"
+        address_obj = order_obj.shipping_address
+        
+        customer = client.v1.customers.create({
+            "email": email,
+            "name": user_obj.full_name,
+            "address": {
+                "line1": address_obj.address_line_1,
+                "line2": address_obj.address_line_2 or "",
+                "city": address_obj.city,
+                "postal_code": address_obj.postal_code,
+                "country": "GB",
+            },
+            "shipping": {
+                "name": user_obj.full_name,
+                    "address": {
+                    "line1": address_obj.address_line_1,
+                    "line2": address_obj.address_line_2 or "",
+                    "city": address_obj.city,
+                    "postal_code": address_obj.postal_code,
+                    "country": "GB",
+                },
+            },
+        })
+
         session = client.v1.checkout.sessions.create({
-            "customer_email":email,
+            "customer": customer.id,
+            "customer_update": {
+                "shipping": "auto",
+            },
             "line_items":line_items,
-            "shipping_options":shipping_options,
+            "shipping_options":[{
+                "shipping_rate": shipping_rate.id,
+            }],
+            "shipping_address_collection": {
+                "allowed_countries": ["GB"],
+            },
             "metadata":{
-                "order_id":order_obj.order_id,
-                "cart_obj":cart_obj.id
+                "order_id":str(order_obj.order_id),
+                "cart_obj":str(cart_obj.id)
                 },
             "mode":"payment",
+            "automatic_tax":{"enabled": True},
+            "adaptive_pricing": {
+                "enabled": True,
+            },
             "success_url":success_url,
             "cancel_url":cancel_url
         })
