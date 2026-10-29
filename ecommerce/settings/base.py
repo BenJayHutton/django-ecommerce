@@ -3,10 +3,14 @@ import dotenv
 import os
 from pathlib import Path
 
-dotenv.load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load env files from the project root or the nested ecommerce folder.
+for env_path in [BASE_DIR / '.env', BASE_DIR / 'ecommerce' / '.env']:
+    if env_path.exists():
+        dotenv.load_dotenv(env_path, override=False)
+        break
 
 # Application definition
 
