@@ -1,3 +1,5 @@
+import logging
+import random, string
 from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
@@ -8,11 +10,15 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
-import random, string
-
 length = 32
 random_string = ''.join(random.choices(string.ascii_letters+string.digits+string.punctuation, k=length))
 DEFAULT_ACTIVATION_DAYS = getattr(settings, "DEFAULT_ACTIVATION_DAYS", 7)
+
+project_debug = logging.getLogger("debug")
+project_access = logging.getLogger("access")
+project_error = logging.getLogger("error")
+
+now = timezone.now()
 
 
 class UserManager(BaseUserManager):
@@ -197,15 +203,18 @@ class EmailActivation(models.Model):
                 subject = '1-Click Email Activation'
                 from_email = settings.DEFAULT_FROM_EMAIL
                 recipient_list = [self.email]
-                sent_mail = send_mail(
-                    subject,
-                    txt_,
-                    from_email,
-                    recipient_list,
-                    html_message=html_,
-                    fail_silently=False,
-                )
-                return sent_mail
+                try:
+                    sent_mail = send_mail(
+                        subject,
+                        txt_,
+                        from_email,
+                        recipient_list,
+                        html_message=html_,
+                        fail_silently=False,
+                    )
+                    return sent_mail
+                except Exception as e:
+                    project_debug.debug(f'[{now}] send_activation_email error: {type(e)}: {e}')
         return False
 
 
