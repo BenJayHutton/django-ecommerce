@@ -82,11 +82,10 @@ class StripeCharge(View):
         })
 
         domain = os.environ.get("BASE_URL")
-        port = os.environ.get("PORT_LOCAL")
         checkout_path = reverse('cart:checkout')
         checkout_path_success = reverse('cart:success')
-        success_url = f"{request.scheme}://{domain}:{port}{checkout_path_success}"
-        cancel_url = f"{request.scheme}://{domain}:{port}{checkout_path}"
+        success_url = f"{request.scheme}://{domain}{checkout_path_success}"
+        cancel_url = f"{request.scheme}://{domain}{checkout_path}"
         address_obj = order_obj.shipping_address
         
         customer = client.v1.customers.create({
