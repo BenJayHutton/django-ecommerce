@@ -14,9 +14,9 @@ length = 32
 random_string = ''.join(random.choices(string.ascii_letters+string.digits+string.punctuation, k=length))
 DEFAULT_ACTIVATION_DAYS = getattr(settings, "DEFAULT_ACTIVATION_DAYS", 7)
 
-project_debug = logging.getLogger("debug")
-project_access = logging.getLogger("access")
-project_error = logging.getLogger("error")
+project_debug = logging.getLogger("project_debug_log")
+project_access = logging.getLogger("project_access_log")
+project_error = logging.getLogger("project_error_log")
 
 now = timezone.now()
 
@@ -204,6 +204,8 @@ class EmailActivation(models.Model):
                 from_email = settings.DEFAULT_FROM_EMAIL
                 recipient_list = [self.email]
                 try:
+                    if not settings.EMAIL_BACKEND:
+                        raise RuntimeError("EMAIL_BACKEND is not configured")
                     sent_mail = send_mail(
                         subject,
                         txt_,
@@ -214,7 +216,8 @@ class EmailActivation(models.Model):
                     )
                     return sent_mail
                 except Exception as e:
-                    project_debug.debug(f'[{now}] send_activation_email error: {type(e)}: {e}')
+                    project_debug.exception(f'[{now}] send_activation_email error: {type(e)}: {e}')
+                    return False
         return False
 
 
