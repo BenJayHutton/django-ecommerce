@@ -1,4 +1,7 @@
+from .base import *
+from .production import *
+
 try:
     from .local import *
-except Exception:
-    from .production import *
+except:
+    pass
