@@ -130,7 +130,7 @@ class OrderManager(models.Manager):
             cus_email = order.billing_profile.email
             cus_items = ""
             for cart_items in order.cart.cart_items.all():
-                cus_items += str(f"{cart_items.quantity} * {cart_items.product.title}\n")
+                cus_items += str(f"{cart_items.quantity} * {cart_items.product.title}<br>")
             order_subtotal = order.subtotal
             order_vat = order.vat
             order_shipping = order.shipping_total
