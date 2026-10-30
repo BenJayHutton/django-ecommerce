@@ -71,12 +71,7 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, *args, **kwargs):
         request = self.request
-        context = super(
-            OrderDetailView,
-            self).get_context_data(
-            *
-            args,
-            **kwargs)
+        context = super( OrderDetailView, self).get_context_data(*args, **kwargs)
         context['title'] = "Order Details"
         return context
 

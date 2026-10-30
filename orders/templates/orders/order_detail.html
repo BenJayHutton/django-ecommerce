@@ -6,7 +6,10 @@
     </nav>
     <div>
         <p>Order {{ object.order_id }}</p>
-        <p>Items: {% for cart_item in object.cart.cart_items.all %}{{cart_item.product}}{% if not forloop.last %}, {% endif %}{% endfor %} </p>
+        <p class="pb-2">Items: <br>
+            {% for cart_item in object.cart.cart_items.all %}
+            {{cart_item.quantity}} * {{cart_item.product}} <br>
+            {% endfor %} </p>
         <p>Shipping address {{ object.shipping_address.get_address}}</p>
         <p>Billing address {{ object.shipping_address.get_address}}</p>
         <p>Cart Total: £{{ object.cart.total|floatformat:2}}</p>

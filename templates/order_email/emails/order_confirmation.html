@@ -58,10 +58,10 @@
         </div>
 
         <div class="p-1 font-bold">
-            {{ cus_items }}<br>
+            <p>{{ cus_items|linebreaks }}</p>
             Subtotal: £{{order_subtotal|floatformat:2}}<br>
-            Vat £{{order_vat|floatformat:2}}<br>
             Shipping: £{{order_shipping|floatformat:2}}<br>
+            Vat £{{order_vat|floatformat:2}}<br>
             Total: £{{order_total|floatformat:2}}<br>
             Order No: {{ order_id}}<br>
             Thank you <a href="http://www.SweetSweetSwag.com">SweetSweetSwag</a>

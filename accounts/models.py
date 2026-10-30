@@ -188,11 +188,12 @@ class EmailActivation(models.Model):
             if self.key:
                 scheme_url = getattr(settings, 'HOST_SCHEME', None)
                 base_url = getattr(settings, 'BASE_URL', None)
+                port = getattr(settings, 'PORT', None)
                 key_path = reverse(
                     "account:email-activate",
                     kwargs={
                         'key': self.key})
-                path = str(f"{scheme_url}{base_url}{key_path}")
+                path = str(f"{scheme_url}{base_url}:{port}/{key_path}")
                 context = {
                     'path': path,
                     'email': self.email,

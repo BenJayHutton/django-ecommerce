@@ -90,7 +90,7 @@ class AccountEmailActivateView(FormMixin, View):
 class GuestRegisterView(NextUrlMixin, RequestFormAttachMixin, CreateView):
     model = GuestEmail
     form_class = GuestForm
-    default_next = reverse_lazy('accounts:register') #'/register/'
+    default_next = reverse_lazy('accounts:register')
 
     def get_success_url(self):
         return self.get_next_url()
