@@ -193,7 +193,7 @@ class EmailActivation(models.Model):
                     "account:email-activate",
                     kwargs={
                         'key': self.key})
-                path = str(f"{scheme_url}{base_url}:{port}/{key_path}")
+                path = str(f"{scheme_url}{base_url}:{port}{key_path}")
                 context = {
                     'path': path,
                     'email': self.email,
