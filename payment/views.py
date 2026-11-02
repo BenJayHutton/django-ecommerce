@@ -33,6 +33,11 @@ class StripeCharge(View):
             email = None
             cart_obj, cart_created = Cart.objects.new_or_get(request)
             user_obj = request.user
+            if hasattr(user_obj, "full_name"):
+                full_name = user_obj.full_name
+            else:
+                full_name = "Guest"
+            
             if  not cart_obj or cart_created:
                 return jsonify({"error": "Your cart is empty."}, status=400)
 
@@ -93,7 +98,7 @@ class StripeCharge(View):
             
             customer = client.v1.customers.create({
                 "email": email,
-                "name": user_obj.full_name,
+                "name": full_name,
                 "address": {
                     "line1": address_obj.address_line_1,
                     "line2": address_obj.address_line_2 or "",
@@ -102,7 +107,7 @@ class StripeCharge(View):
                     "country": "GB",
                 },
                 "shipping": {
-                    "name": user_obj.full_name,
+                    "name": full_name,
                         "address": {
                         "line1": address_obj.address_line_1,
                         "line2": address_obj.address_line_2 or "",
@@ -139,14 +144,22 @@ class StripeCharge(View):
             })
             event_name = session['object']
             event_id = session['id']
-            stripe_logger.info(f'[{now}] [{event_name}: {event_id}]\n{session}')
+            
             stripe_obj, created = StripeCheckoutSession.objects.new_or_get(request, event=session)
             return JsonResponse({"url": session.url})
+        except AttributeError as e:
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] StripeCharge AttributeError POST\n{type(e)} {e}', exc_info=True)
+            raise AttributeError
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] StripeCharge POST\n{type(e)} {e}', exc_info=True)
+            stripe_error.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] [{event_name}: {event_id}]\n{session}', exc_info=True)
+            raise Exception
 
 
 class StripeAdminView(View):
@@ -165,8 +178,7 @@ class StripeAdminView(View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
-
+            raise Exception
 
     def get (self, *args, **kwargs):
         try:
@@ -182,8 +194,8 @@ class StripeAdminView(View):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] StripeAdminView GET\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
 
 class PaypalAdminView(View):
@@ -197,8 +209,8 @@ class PaypalAdminView(View):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] PaypalAdminView GET\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
 
 def payment_success(request):
@@ -210,5 +222,5 @@ def payment_success(request):
     except Exception as e:
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
-        f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-        return HttpResponse(status=500)
+        f'[{now}] def payment_success\n{type(e)} {e}', exc_info=True)
+        raise Exception

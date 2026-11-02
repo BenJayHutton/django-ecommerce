@@ -21,8 +21,12 @@ class CurrierManager(models.Manager):
         created = False
         user = request.user
         session_key = request.session.session_key
-        qs = self.get_queryset().filter(user=user, cart=cart)
-        if qs.exists():
+        if user.is_authenticated:
+            qs = self.get_queryset().filter(user=user, cart=cart)
+        else:
+            qs = self.get_queryset().filter(session_key=session_key, cart=cart)
+
+        if qs:
             currier_obj = qs.first()
         else:
             if user.is_authenticated:

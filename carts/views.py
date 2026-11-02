@@ -69,14 +69,14 @@ class CartHomeView(View):
     
     def add_to_cart(self, request):
         try:
+            product_id = request.POST.get("product_id")
+            product_quantity = int(request.POST.get('product-quantity'))
             session_obj = request.session
             cart_obj, cart_obj_created = Cart.objects.new_or_get(request)
             currier_obj, currier_obj_created = CurrierModel.objects.new_or_get(request, cart=cart_obj)
+            product_obj = Product.objects.get(id=product_id)
             cart_item_obj, cart_item_obj_created = CartItem.objects.new_or_get(request, product_obj=product_obj, product_quantity=product_quantity)
             cart_id = session_obj["cart_id"]
-            product_quantity = int(request.POST.get('product-quantity'))
-            product_id = request.POST.get("product_id")
-            product_obj = Product.objects.get(id=product_id)
             cart_item_id = cart_item_obj.id
             cart_item_price = cart_item_obj.total
             cart_obj.cart_items.add(cart_item_obj)
@@ -202,7 +202,7 @@ class CartDetailView(DetailView):
             context['title'] = "Cart Details"
             return context
         except Exception as e:
-            project_error_log.debug(f'[{now}] CartDetailView get_context_data\n{type(e)} {e}')
+            project_error_log.debug(f'[{now}] CartDetailView get_context_data\n{type(e)} {e}', exc_info=True)
             raise Exception
 
     def get_object(self, *args, **kwargs):
@@ -214,31 +214,37 @@ class CartDetailView(DetailView):
 
 
 def checkout_home(request, *args, **kwargs):
-    currier_obj = None
-    order_obj = None
-    email_obj = request.session.get("email_obj")
-    session_key = request.session.session_key
-    user_obj = request.user
-    billing_address_id = request.session.get("billing_address_id", None)
-    shipping_address_id = request.session.get("shipping_address_id", None)
-    cart_obj, cart_created = Cart.objects.new_or_get(request)
-    if cart_created or cart_obj.cart_items.count() == 0:
-        redirect("cart:home")
-    shipping_address_required = not cart_obj.is_digital
-    login_form = LoginForm(request=request)
-    guest_form = GuestForm(request=request)
-    address_form = AddressForm
-    address_qs = None
-    has_card = False
-    if user_obj.is_authenticated:
-        email_obj = user_obj.email
-    
-    billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
+    try:
+        currier_obj = None
+        order_obj = None
+        email_obj = request.session.get("email_obj")
+        session_key = request.session.session_key
+        user_obj = request.user
+        billing_address_id = request.session.get("billing_address_id", None)
+        shipping_address_id = request.session.get("shipping_address_id", None)
+        cart_obj, cart_created = Cart.objects.new_or_get(request)
+        if cart_created or cart_obj.cart_items.count() == 0:
+            redirect("cart:home")
+        shipping_address_required = not cart_obj.is_digital
+        login_form = LoginForm(request=request)
+        guest_form = GuestForm(request=request)
+        address_form = AddressForm
+        address_qs = None
+        has_card = False
+        if user_obj.is_authenticated:
+            email_obj = user_obj.email
+        if email_obj is not None:
+            billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
+        else:
+            billing_profile = None
+    except Exception as e:
+        project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
+        raise Exception
     
     # bind forms to POST if present (handle guest checkout even if no billing_profile exists yet)
     if request.method == 'POST':
+        request.session["email_obj"] = request.POST.get("email")
         try:
-            request.session["email_obj"] = request.POST.get("email")
             guest_form = GuestForm(request=request, data=request.POST)
             if guest_form.is_valid():
                 guest_obj = guest_form.save()
