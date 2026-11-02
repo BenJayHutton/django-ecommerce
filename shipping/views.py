@@ -1,7 +1,13 @@
+import logging
+from django.conf import settings
+from django.utils import timezone
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import View
 
-# Create your views here.
+now = timezone.now()
+project_error_log = logging.getLogger("project_error_log")
+
 
 class Shipping():
     api_key=None
@@ -29,8 +35,14 @@ class FedEx(Shipping):
 
 class RoyalMail(Shipping):
     def get_shipping_cost(self, weight=None):
-        first_class = self.first_class(weight)
-        return first_class
+        try:
+            first_class = self.first_class(weight)
+            return first_class
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] RoyalMail get_shipping_cost\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)
         
 
     def first_class(weight=None):

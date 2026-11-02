@@ -1,3 +1,7 @@
+import logging
+from django.conf import settings
+from django.http import HttpResponse
+from django.utils import timezone
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
@@ -15,17 +19,25 @@ from orders.models import Order
 from .forms import LoginForm, RegisterForm, GuestForm, ReactivateEmailForm, UserDetailChangeForm
 from .models import EmailActivation, User, GuestEmail
 
+now = timezone.now()
+project_error_log = logging.getLogger("project_error_log")
 
 class Accounts(LoginRequiredMixin, DetailView):
     template_name = 'accounts/home.html'
 
     def get_context_data(self, *args, **kwargs):
-        request = self.request
-        context = super(Accounts, self).get_context_data(*args, **kwargs)
-        context['title'] = "Account Home"
-        context['description'] = "Account Home"
-        return context
-
+        try:
+            request = self.request
+            context = super(Accounts, self).get_context_data(*args, **kwargs)
+            context['title'] = "Account Home"
+            context['description'] = "Account Home"
+            return context
+        except Exception as e:
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] Accounts view get_context_data\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)
+        
     def get_object(self):
         return self.request.user
 
@@ -36,37 +48,49 @@ class AccountEmailActivateView(FormMixin, View):
     key = None
 
     def get(self, request, key=None, *args, **kwargs):
-        self.key = key
-        if key is not None:
-            qs = EmailActivation.objects.filter(key__iexact=key)
-            confirm_qs = qs.confirmable()
-            if confirm_qs.count() == 1:
-                obj = confirm_qs.first()
-                obj.activate()
-                messages.success(
-                    request, "your email has been confirmed, please login.")
-                return redirect("accounts:login")
-            else:
-                activated_qs = qs.filter(activated=True)
-                if activated_qs.exists():
-                    reset_link = reverse("password_reset")
-                    msg = """Your email has already been confirmed
-                    Do you need to <a href="{link}">reset your password?</a>
-                    """.format(link=reset_link)
-                    messages.success(request, mark_safe(msg))
+        try:
+            self.key = key
+            if key is not None:
+                qs = EmailActivation.objects.filter(key__iexact=key)
+                confirm_qs = qs.confirmable()
+                if confirm_qs.count() == 1:
+                    obj = confirm_qs.first()
+                    obj.activate()
+                    messages.success(
+                        request, "your email has been confirmed, please login.")
                     return redirect("accounts:login")
-        context = {
-            'form': self.get_form(),
-            'key': key,
-        }
-        return render(request, 'registration/activation-error.html', context)
+                else:
+                    activated_qs = qs.filter(activated=True)
+                    if activated_qs.exists():
+                        reset_link = reverse("password_reset")
+                        msg = """Your email has already been confirmed
+                        Do you need to <a href="{link}">reset your password?</a>
+                        """.format(link=reset_link)
+                        messages.success(request, mark_safe(msg))
+                        return redirect("accounts:login")
+            context = {
+                'form': self.get_form(),
+                'key': key,
+            }
+            return render(request, 'registration/activation-error.html', context)
+        except Exception as e:
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] AccountEmailActivateView GET\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)
 
     def post(self, request, *args, **kwargs):
-        form = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form)
-        else:
-            return self.form_invalid(form)
+        try:
+            form = self.get_form()
+            if form.is_valid():
+                return self.form_valid(form)
+            else:
+                return self.form_invalid(form)
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] AccountEmailActivateView post\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)            
 
     def form_valid(self, form):
         msg = """Activation link sent, please check email"""
@@ -128,28 +152,34 @@ class RegisterView(CreateView):
     success_url = reverse_lazy('accounts:login')
 
     def form_valid(self, form):
-        request = self.request
-        session_key = request.session.session_key
-        # save user (RegisterForm.save sets is_active=False)
-        user = form.save()
-        email = user.email
-        # find any GuestEmail for this email (regardless of session)
         try:
+            request = self.request
+            session_key = request.session.session_key
+            # save user (RegisterForm.save sets is_active=False)
+            user = form.save()
+            email = user.email
+            # find any GuestEmail for this email (regardless of session)
             guest_qs = GuestEmail.objects.filter(email=email)
             guest_obj = guest_qs.first() if guest_qs.exists() else None
-        except Exception:
-            guest_obj = None
+        except Exception as e:
+            guest_obj = None # do something else?
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
 
         # create or get BillingProfile for this email and attach to user
         try:
-            billing_profile, _ = BillingProfile.objects.new_or_get(request, email=email)
+            billing_profile, created = BillingProfile.objects.new_or_get(request, email=email)
             if billing_profile.user is None:
                 billing_profile.user = user
             if guest_obj:
                 billing_profile.guest_user = guest_obj
             billing_profile.save()
-        except Exception:
-            billing_profile = None
+        except Exception as e:
+            billing_profile = None # Do something else
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
 
         # attach any addresses created during the guest session to this user/billing_profile
         try:
@@ -157,21 +187,30 @@ class RegisterView(CreateView):
                 Address.objects.filter(session_key=session_key).update(user=user)
                 if billing_profile:
                     Address.objects.filter(session_key=session_key).update(billing_profile=billing_profile)
-        except Exception:
-            pass
+        except Exception as e:
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)
 
         # attach any orders created during the guest session to the billing_profile
         try:
             if session_key and billing_profile:
                 Order.objects.filter(session_key=session_key).update(billing_profile=billing_profile)
-        except Exception:
-            pass
+        except Exception as e:
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=200)
 
         # cleanup guest session marker if present
         try:
             del request.session['guest_email_id']
-        except Exception:
-            pass
+        except Exception as e:
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=200)
 
         messages.success(request, "Account created. Please check your email to activate.")
         return super(RegisterView, self).form_valid(form)
@@ -185,14 +224,17 @@ class UserDetailUpdateView(LoginRequiredMixin, UpdateView):
         return self.request.user
 
     def get_context_data(self, *args, **kwargs):
-        context = super(
-            UserDetailUpdateView,
-            self).get_context_data(
-            *
-            args,
-            **kwargs)
-        context['title'] = 'Change your Account Details'
-        return context
+        try:
+            context = super(
+                UserDetailUpdateView,
+                self).get_context_data(*args, **kwargs)
+            context['title'] = 'Change your Account Details'
+            return context
+        except Exception as e:
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=200)
 
     def get_success_url(self):
         return reverse("account:home")

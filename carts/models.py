@@ -88,19 +88,20 @@ class CartManager(models.Manager):
         cart_obj = self.get_queryset().filter(
             session_key=session_key,
             is_active=True,
-        ).order_by('-id').first()
+        ).first()
 
-        if cart_obj is not None:
+        if cart_obj:
+            cart_obj.session_key = session_key
+            cart_obj.save(update_fields=['session_key'])
             if request.user.is_authenticated and cart_obj.user_id is None:
                 cart_obj.user = request.user
                 cart_obj.save(update_fields=['user'])
-            elif request.user.is_authenticated:
-                cart_obj.session_key = session_key
-                cart_obj.save(update_fields=['session_key'])
         else:
             cart_obj = self.model.objects.create(session_key=session_key)
+            if request.user.is_authenticated and cart_obj.user_id is None:
+                cart_obj.user = request.user
+                cart_obj.save(update_fields=['user'])
             created = True
-
         request.session['cart_id'] = cart_obj.id
         return cart_obj, created
 

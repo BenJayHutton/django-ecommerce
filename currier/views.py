@@ -1,9 +1,16 @@
+import logging
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, View
 from django.urls import reverse_lazy
 from decimal import Decimal
+
 from .models import Currier
 from .forms import CurrierForm
+
+project_access_log = logging.getLogger("project_access_log")
+project_debug_log = logging.getLogger("project_debug_log")
+project_error_log = logging.getLogger("project_error_log")
+project_exception_log = logging.getLogger("project_exception_log")
 
 
 class Currier(ListView):

@@ -1,3 +1,7 @@
+import logging
+from django.conf import settings
+from django.http import HttpResponse
+from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -9,43 +13,52 @@ from billing.models import BillingProfile
 from .models import Address
 from .forms import AddressForm
 
+now = timezone.now()
+project_error_log = logging.getLogger("project_error_log")
+
 
 def checkout_address_create_view(request):
-    user = request.user
-    session_key = request.session.session_key
-    form = AddressForm(request.POST or None)
-    next_ = request.GET.get('next')
-    next_post = request.POST.get('next')
-    address_type = request.POST.get('id_shipping_type', None)
-    redirect_path = next_ or next_post or None
+    try:
+        user = request.user
+        session_key = request.session.session_key
+        form = AddressForm(request.POST or None)
+        next_ = request.GET.get('next')
+        next_post = request.POST.get('next')
+        address_type = request.POST.get('id_shipping_type', None)
+        redirect_path = next_ or next_post or None
 
-    if user.is_authenticated:
-        email_obj = user.email
-    else:
-        email_obj =  request.session.get('customer_email')
-   
-    if form.is_valid():
-        billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
-        instance = form.save(commit=False)
-
-        if billing_profile is not None:
-            instance.billing_profile = billing_profile
-            instance.address_type = address_type
-            instance.session_key = session_key
-            instance.save()
-            if user.is_authenticated:
-                instance.user = user
-                instance.save()
-            request.session[address_type + "_address_id"] = instance.id
-            request.session["email_obj"] = instance.billing_profile.email
+        if user.is_authenticated:
+            email_obj = user.email
         else:
-            return redirect("cart:checkout")
-        if url_has_allowed_host_and_scheme(redirect_path, request.get_host()):
-            return redirect(redirect_path)
-    context = {
-        "form": form,
-    }
-    return redirect("cart:checkout")
+            email_obj =  request.session.get('customer_email')
+    
+        if form.is_valid():
+            billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
+            instance = form.save(commit=False)
+
+            if billing_profile is not None:
+                instance.billing_profile = billing_profile
+                instance.address_type = address_type
+                instance.session_key = session_key
+                instance.save()
+                if user.is_authenticated:
+                    instance.user = user
+                    instance.save()
+                request.session[address_type + "_address_id"] = instance.id
+                request.session["email_obj"] = instance.billing_profile.email
+            else:
+                return redirect("cart:checkout")
+            if url_has_allowed_host_and_scheme(redirect_path, request.get_host()):
+                return redirect(redirect_path)
+        context = {
+            "form": form,
+        }
+        return redirect("cart:checkout")
+    except Exception as e:
+        project_error_log.log(
+        logging.DEBUG if settings.DEBUG else logging.WARNING,
+        f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
+        return HttpResponse(status=500)
 
 
 def checkout_address_reuse_view(request):

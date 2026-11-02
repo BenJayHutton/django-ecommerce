@@ -1,37 +1,44 @@
+import logging
+from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.generic import (
-    CreateView,
-    ListView,
-    UpdateView,
-    DetailView
-)
+from django.views.generic import CreateView, ListView, UpdateView, DetailView
 
 from .models import BillingProfile
-# from payment.models import Card
 
+now = timezone.now()
+project_error_log = logging.getLogger("project_error_log")
 
 def pay_method_view(request):
-    if request.user.is_authenticated:
-        billing_profile = request.user.billingprofile
-        my_customer_id = billing_profile.customer_id
+    try:
+        if request.user.is_authenticated:
+            billing_profile = request.user.billingprofile
+            my_customer_id = billing_profile.customer_id
 
-    billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(
-        request)
+        billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(
+            request)
 
-    if not billing_profile:
-        return redirect("/cart")
-    next_url = None
-    next_ = request.GET.get('next')
-    if url_has_allowed_host_and_scheme(next_, request.get_host()):
-        next_url = next_
+        if not billing_profile:
+            return redirect("/cart")
+        next_url = None
+        next_ = request.GET.get('next')
+        if url_has_allowed_host_and_scheme(next_, request.get_host()):
+            next_url = next_
 
-    context = {
-        'next_url': next_url
-    }
+        context = {
+            'next_url': next_url
+        }
 
-    return render(request, 'billing/payment-method.html', context)
+        return render(request, 'billing/payment-method.html', context)
+    except Exception as e:
+        project_error_log.log(
+        logging.DEBUG if settings.DEBUG else logging.WARNING,
+        f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
+        return HttpResponse(status=500)
+    
 
 
 def pay_method_createview(request):
@@ -49,17 +56,17 @@ def pay_method_createview(request):
         return JsonResponse({"message": "Success! your card was added"})
     return HttpResponse("401...not found", status=401)
 
-    class CreateView(LoginRequiredMixin, CreateView):
-        pass
+class CreateView(LoginRequiredMixin, CreateView):
+    pass
 
-    class UpdateView(LoginRequiredMixin, UpdateView):
-        pass
+class UpdateView(LoginRequiredMixin, UpdateView):
+    pass
 
-    def _delete_view(request, slug):
-        pass
+def _delete_view(request, slug):
+    pass
 
-    class ListView(ListView):
-        pass
+class ListView(ListView):
+    pass
 
-    class DetailSlugView(DetailView):
-        pass
+class DetailSlugView(DetailView):
+    pass

@@ -1,10 +1,13 @@
+import logging
+from django.conf import settings
+from django.http import HttpResponse
+from django.utils import timezone
+import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.views.generic import TemplateView, View, ListView
 from django.shortcuts import render
 from django.utils import timezone
-
-import datetime
 
 from orders.models import Order
 from products.models import Product
@@ -12,6 +15,9 @@ from billing.models import BillingProfile
 from carts.models import Cart
 
 from .models import ObjectViewed
+
+now = timezone.now()
+project_error_log = logging.getLogger("project_error_log")
 
 
 class ObjectViewList(ListView):
@@ -30,9 +36,15 @@ class CartView(LoginRequiredMixin, TemplateView):
         return super(CartView, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
-        context = super(CartView, self).get_context_data(*args, **kwargs)
-        qs = Cart.objects.all()
-        return context
+        try:
+            context = super(CartView, self).get_context_data(*args, **kwargs)
+            qs = Cart.objects.all()
+            return context
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)
 
 
 class OrderView(LoginRequiredMixin, TemplateView):
@@ -47,9 +59,15 @@ class OrderView(LoginRequiredMixin, TemplateView):
         return super(OrderView, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
-        context = super(OrderView, self).get_context_data(*args, **kwargs)
-        qs = Order.objects.all()
-        return context
+        try:
+            context = super(OrderView, self).get_context_data(*args, **kwargs)
+            qs = Order.objects.all()
+            return context
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)
 
 
 class BillingProfileView(LoginRequiredMixin, TemplateView):
@@ -64,14 +82,15 @@ class BillingProfileView(LoginRequiredMixin, TemplateView):
         return super(BillingProfileView, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
-        context = super(
-            BillingProfileView,
-            self).get_context_data(
-            *
-            args,
-            **kwargs)
-        qs = Order.objects.all()
-        return context
+        try:
+            context = super(BillingProfileView, self).get_context_data(*args, **kwargs)
+            qs = Order.objects.all()
+            return context
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)
 
 
 class ProductView(LoginRequiredMixin, TemplateView):
@@ -86,11 +105,16 @@ class ProductView(LoginRequiredMixin, TemplateView):
         return super(ProductView, self).dispatch(*args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
-        context = super(ProductView, self).get_context_data(*args, **kwargs)
-        context['title'] = "Manage Product"
-        qs = Order.objects.all()
-        return context
-
+        try:
+            context = super(ProductView, self).get_context_data(*args, **kwargs)
+            context['title'] = "Manage Product"
+            qs = Order.objects.all()
+            return context
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
+            return HttpResponse(status=500)
 
 class SalesAjaxView(View):
     def get(self, request, *args, **kwargs):

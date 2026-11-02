@@ -1,6 +1,7 @@
 import logging
 
-logger = logging.getLogger("project_error_log")
+project_debug_log = logging.getLogger("project_debug_log")
+
 
 class GlobalExceptionLoggingMiddleware:
     def __init__(self, get_response):
@@ -10,5 +11,5 @@ class GlobalExceptionLoggingMiddleware:
         try:
             return self.get_response(request)
         except Exception:
-            logger.exception("Unhandled exception for %s %s", request.method, request.path)
+            project_debug_log.exception("Unhandled exception for %s %s", request.method, request.path)
             raise

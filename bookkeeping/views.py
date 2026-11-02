@@ -1,17 +1,19 @@
+import logging
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import (
-    CreateView,
-    ListView,
-    UpdateView,
-    DetailView,
-    DeleteView,
-)
+from django.views.generic import CreateView, ListView,UpdateView, DetailView, DeleteView
 
 from .forms import CashbookForm, CapitalLedgerForm, PurchaseLedgerForm, SalesLedgerForm, VatLedgerForm
-
 from .models import CashBook, SalesLedger, PurchaseLedger, VatLedger, CapitalLedger
+
+import logging
+
+project_access_log = logging.getLogger("project_access_log")
+project_debug_log = logging.getLogger("project_debug_log")
+project_error_log = logging.getLogger("project_error_log")
+project_exception_log = logging.getLogger("project_exception_log")
+
 
 class LedgerListView(LoginRequiredMixin, ListView):
     template_name = 'bookkeeping/ledger.html'
