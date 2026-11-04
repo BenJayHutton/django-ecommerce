@@ -1,11 +1,11 @@
 import json
 import logging
 from django.conf import settings
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils import timezone
 from django.views.generic import CreateView, UpdateView, DetailView, View
 
 from accounts.forms import LoginForm, GuestForm
@@ -96,8 +96,8 @@ class CartHomeView(View):
                 "cart_item_count": int(cart_obj.cart_items.count())
             }
             return json_data
-        except Exception as E:
-            project_error_log.exception(f'[{now}] CartHomeView.add_to_cart\n{type(E)}  {E}')
+        except Exception as e:
+            project_error_log.exception(f'[{now}] CartHomeView.add_to_cart\n{type(e)} {e}')
             raise Exception
 
     def update_cart(self, request):
@@ -143,8 +143,8 @@ class CartHomeView(View):
             cart_item_obj.calculate_cart_item_vat()
             request.session['cart_item_count'] = cart_obj.cart_items.count()
             return cart_obj
-        except Exception as E:
-            project_error_log.debug(f'[{now}] CartHomeView.delete_cart\n{type(E)} {E}')
+        except Exception as e:
+            project_error_log.debug(f'[{now}] CartHomeView.delete_cart\n{type(e)} {e}')
             raise Exception
 
 
@@ -237,14 +237,10 @@ def checkout_home(request, *args, **kwargs):
             billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
         else:
             billing_profile = None
-    except Exception as e:
-        project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
-        raise Exception
-    
-    # bind forms to POST if present (handle guest checkout even if no billing_profile exists yet)
-    if request.method == 'POST':
-        request.session["email_obj"] = request.POST.get("email")
-        try:
+        # bind forms to POST if present (handle guest checkout even if no billing_profile exists yet)
+        if request.method == 'POST':
+            request.session["email_obj"] = request.POST.get("email")
+            
             guest_form = GuestForm(request=request, data=request.POST)
             if guest_form.is_valid():
                 guest_obj = guest_form.save()
@@ -252,9 +248,7 @@ def checkout_home(request, *args, **kwargs):
                 GuestEmail.objects.new_or_get(request, email=email_val)
                 billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_val)
                 request.session['customer_email'] = email_val
-        except Exception as e:
-            print(f"Error with GuestForm {type(e)} {e}")
-        try:
+
             login_form = LoginForm(request=request, data=request.POST)
             if login_form.is_valid():
                 billing_profile, created = BillingProfile.objects.new_or_get(request)
@@ -262,67 +256,71 @@ def checkout_home(request, *args, **kwargs):
                     billing_profile.email = request.user.email
                     billing_profile.user = request.user
                     billing_profile.save()
-        except Exception as e:
-            print(f"Error with LoginForm {type(e)} {e}")
-
-    if billing_profile is not None:
-        if user_obj.is_authenticated:
-            address_qs = Address.objects.filter(billing_profile=billing_profile)
-        else:
-            address_qs = None
-        order_obj, order_obj_created = Order.objects.new_or_get(billing_profile, cart_obj, session_key=session_key)
-        request.session['order_obj'] = order_obj.order_id
-        order_obj.total = cart_obj.total
-        order_obj.vat = cart_obj.vat
-        order_obj.shipping_total = cart_obj.shipping
-        order_obj.subtotal = cart_obj.subtotal
-        order_obj.save()
-        
+        if billing_profile is not None:
+                if user_obj.is_authenticated:
+                    address_qs = Address.objects.filter(billing_profile=billing_profile)
+                else:
+                    address_qs = None
+                order_obj, order_obj_created = Order.objects.new_or_get(billing_profile, cart_obj, session_key=session_key)
+                request.session['order_obj'] = order_obj.order_id
+                order_obj.total = cart_obj.total
+                order_obj.vat = cart_obj.vat
+                order_obj.shipping_total = cart_obj.shipping
+                order_obj.subtotal = cart_obj.subtotal
+                order_obj.save()
+                
         if shipping_address_id:
             order_obj.shipping_address = Address.objects.get(id=shipping_address_id)
         if billing_address_id:
             order_obj.billing_address = Address.objects.get(id=billing_address_id)
         if billing_address_id or shipping_address_id:
             order_obj.save()
-    context = {
-        "address_form": address_form,
-        "address_qs": address_qs,
-        "billing_profile": billing_profile,
-        "currier_obj":currier_obj,
-        "description": "Cart home",
-        "guest_form": guest_form,
-        "email_obj": email_obj,
-        "login_form": login_form,
-        "object": order_obj,
-        "publish_key": STRIPE_PUB_KEY,
-        "shipping_address_required": shipping_address_required,
-        "title": "Cart",
-    }
-    return render(request, "carts/checkout.html", context)
+        context = {
+                "address_form": address_form,
+                "address_qs": address_qs,
+                "billing_profile": billing_profile,
+                "currier_obj":currier_obj,
+                "description": "Cart home",
+                "guest_form": guest_form,
+                "email_obj": email_obj,
+                "login_form": login_form,
+                "object": order_obj,
+                "publish_key": STRIPE_PUB_KEY,
+                "shipping_address_required": shipping_address_required,
+                "title": "Cart",
+            }
+        return render(request, "carts/checkout.html", context)
+    except Exception as e:
+        project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
+        raise Exception
 
 
 def checkout_done_view(request):
-    context = {
-        "title": "Thank you"
-    }
-    for key, value in request.session.items():
-        if key == 'order_obj':
-            order_obj = Order.objects.get(order_id=value)
-            context["order_obj"] = order_obj
-            order_complete = Order.objects.email_order(value)
-        if key =='cart_id':
-            cart_obj = Cart.objects.get(id=value)
-            cart_obj.is_active=False
-            cart_obj.save()
-    for session_key in (
-        'order_obj',
-        'cart_item_id',
-        'shipping_address_id',
-        'billing_address_id',
-        'cart_id',
-    ):
-        match session_key:
-            case 'order_obj' | 'cart_item_id' | 'shipping_address_id' | 'billing_address_id' | 'cart_id':
-                request.session.pop(session_key, None)
-    request.session['cart_item_count'] = 0
-    return render(request, "carts/checkout-done.html", context)
+    try:
+        context = {
+            "title": "Thank you"
+        }
+        for key, value in request.session.items():
+            if key == 'order_obj':
+                order_obj = Order.objects.get(order_id=value)
+                context["order_obj"] = order_obj
+                order_complete = Order.objects.email_order(value)
+            if key =='cart_id':
+                cart_obj = Cart.objects.get(id=value)
+                cart_obj.is_active=False
+                cart_obj.save()
+        for session_key in (
+            'order_obj',
+            'cart_item_id',
+            'shipping_address_id',
+            'billing_address_id',
+            'cart_id',
+        ):
+            match session_key:
+                case 'order_obj' | 'cart_item_id' | 'shipping_address_id' | 'billing_address_id' | 'cart_id':
+                    request.session.pop(session_key, None)
+        request.session['cart_item_count'] = 0
+        return render(request, "carts/checkout-done.html", context)
+    except Exception as e:
+            project_error_log.debug(f'[{now}] def checkout_done_view\n{type(e)} {e}', exc_info=True)
+            raise Exception

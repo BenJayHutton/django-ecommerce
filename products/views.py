@@ -136,7 +136,7 @@ class UserProductHistoryView(LoginRequiredMixin, ListView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n{type(e)} {e}', exc_info=True)
+            f'[{now}] UserProductHistoryView get_context_data\n{type(e)} {e}', exc_info=True)
             raise Exception
 
     def get_queryset(self, *args, **kwargs):
@@ -183,7 +183,7 @@ class ProductDownloadView(View):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n{type(e)} {e}', exc_info=True)
+            f'[{now}] ProductDownloadView GET\n{type(e)} {e}', exc_info=True)
             raise Exception
 
 
@@ -223,8 +223,8 @@ class ProductDetailSlugView(ObjectViewedMixin, DetailView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] ProductDetailSlugView get_context_data\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] ProductDetailSlugView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def get_object(self, *args, **kwargs):
         request = self.request
@@ -234,7 +234,7 @@ class ProductDetailSlugView(ObjectViewedMixin, DetailView):
         except Product.DoesNotExist:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] ProductDetailSlugView get_object\n {type(e)} {e}', exc_info=True)
+                f'[{now}] ProductDetailSlugView get_object\n{type(e)} {e}', exc_info=True)
             raise Http404("Not found...")
         except Product.MultipleObjectsReturned:
             qs = Product.objects.get(slug=slug, active=True)
@@ -242,6 +242,6 @@ class ProductDetailSlugView(ObjectViewedMixin, DetailView):
         except BaseException as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] ProductDetailSlugView get_object\n {type(e)} {e}', exc_info=True)
+                f'[{now}] ProductDetailSlugView get_object eroor\n{type(e)} {e}', exc_info=True)
             raise Http404("Product not found")
         return instance

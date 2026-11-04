@@ -42,7 +42,7 @@ class RoyalMail(Shipping):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] RoyalMail get_shipping_cost\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            raise Exception
         
 
     def first_class(weight=None):

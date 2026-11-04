@@ -1,4 +1,6 @@
 import logging
+from django.conf import settings
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, View
 from django.urls import reverse_lazy
@@ -7,30 +9,36 @@ from decimal import Decimal
 from .models import Currier
 from .forms import CurrierForm
 
-project_access_log = logging.getLogger("project_access_log")
-project_debug_log = logging.getLogger("project_debug_log")
+now = timezone.now()
 project_error_log = logging.getLogger("project_error_log")
-project_exception_log = logging.getLogger("project_exception_log")
 
 
 class Currier(ListView):
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['my_value'] = 'Hello, World!'
-        return context
+        try:
+            context = super().get_context_data(**kwargs)
+            context['my_value'] = 'Hello, World!'
+            return context
+        except Exception as e:
+            project_error_log.exception(f'[{now}] Currier get_context_data\n{type(e)} {e}')
+            raise Exception
 
     def get_curriers_price_list(*args, **kwargs):
-        weight = kwargs.get("weight")
-        royal_mail_1st = RoyalMail.first_class(weight=weight)
-        royal_mail_2nd = RoyalMail.second_class(weight=weight)
-        international = FedEx.international(weight=weight)
-        couriers = {
-            'Royal Mail 1st Class':royal_mail_1st,
-            'Royal Mail 2nd class':royal_mail_2nd, 
-            'International':international,
-            }
-        return couriers
+        try:
+            weight = kwargs.get("weight")
+            royal_mail_1st = RoyalMail.first_class(weight=weight)
+            royal_mail_2nd = RoyalMail.second_class(weight=weight)
+            international = FedEx.international(weight=weight)
+            couriers = {
+                'Royal Mail 1st Class':royal_mail_1st,
+                'Royal Mail 2nd class':royal_mail_2nd, 
+                'International':international,
+                }
+            return couriers
+        except Exception as e:
+            project_error_log.exception(f'[{now}] Currier get_curriers_price_list\n{type(e)} {e}')
+            raise Exception
 
     def get_price(*args, **kwargs):
         weight = kwargs.get("weight")

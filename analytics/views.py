@@ -1,6 +1,5 @@
 import logging
 from django.conf import settings
-from django.http import HttpResponse
 from django.utils import timezone
 import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -43,8 +42,8 @@ class CartView(LoginRequiredMixin, TemplateView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] CartView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
 
 class OrderView(LoginRequiredMixin, TemplateView):
@@ -66,8 +65,8 @@ class OrderView(LoginRequiredMixin, TemplateView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] OrderView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
 
 class BillingProfileView(LoginRequiredMixin, TemplateView):
@@ -89,8 +88,8 @@ class BillingProfileView(LoginRequiredMixin, TemplateView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] BillingProfileView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
 
 class ProductView(LoginRequiredMixin, TemplateView):
@@ -113,8 +112,8 @@ class ProductView(LoginRequiredMixin, TemplateView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] ProductView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
 class SalesAjaxView(View):
     def get(self, request, *args, **kwargs):
@@ -129,19 +128,13 @@ class SalesAjaxView(View):
                 salesItems = []
                 for x in range(0, days):
                     new_time = start_date + datetime.timedelta(days=x)
-                    datetime_list.append(
-                        new_time
-                    )
-                    labels.append(
-                        new_time.strftime("%a")
-                    )
+                    datetime_list.append(new_time)
+                    labels.append(new_time.strftime("%a"))
                     new_qs = qs.filter(
                         updated__day=new_time.day,
                         updated__month=new_time.month)
                     day_total = new_qs.totals_data()['total__sum'] or 0
-                    salesItems.append(
-                        day_total
-                    )
+                    salesItems.append(day_total)
                 data['labels'] = labels
                 data['data'] = salesItems
 

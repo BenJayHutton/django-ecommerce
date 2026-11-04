@@ -1,6 +1,5 @@
 import logging
 from django.conf import settings
-from django.http import HttpResponse
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, render
@@ -57,60 +56,73 @@ def checkout_address_create_view(request):
     except Exception as e:
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
-        f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-        return HttpResponse(status=500)
+        f'[{now}] def checkout_address_create_view\n{type(e)} {e}', exc_info=True)
+        raise Exception
 
 
 def checkout_address_reuse_view(request):
-    form = AddressForm(request.POST or None)
-    email_obj = request.session.get("email_obj")
-    billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
-    next_ = request.GET.get('next')
-    next_post = request.POST.get('next')
-    address_type = request.POST.get('address_type', 'shipping')
-    redirect_path = next_ or next_post or None
+    try:
+        form = AddressForm(request.POST or None)
+        email_obj = request.session.get("email_obj")
+        billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
+        next_ = request.GET.get('next')
+        next_post = request.POST.get('next')
+        address_type = request.POST.get('address_type', 'shipping')
+        redirect_path = next_ or next_post or None
 
-    if request.method == "POST":
-        shipping_address = request.POST.get('shipping_address', None)
-        if shipping_address is not None:
-            request.session[address_type + "_address_id"] = shipping_address
-        if url_has_allowed_host_and_scheme(
-                redirect_path, request.get_host()):
-            return redirect(redirect_path)
-    return redirect("cart:checkout")
+        if request.method == "POST":
+            shipping_address = request.POST.get('shipping_address', None)
+            if shipping_address is not None:
+                request.session[address_type + "_address_id"] = shipping_address
+            if url_has_allowed_host_and_scheme(
+                    redirect_path, request.get_host()):
+                return redirect(redirect_path)
+        return redirect("cart:checkout")
+    except Exception as e:
+        project_error_log.log(
+        logging.DEBUG if settings.DEBUG else logging.WARNING,
+        f'[{now}] def checkout_address_reuse_view\n{type(e)} {e}', exc_info=True)
+        raise Exception
 
 
 def checkout_address_change_view(request):
-    form = AddressForm()
-    next_ = request.GET.get('next')
-    next_post = request.POST.get('next')
-    address_type = request.GET.get('address_type') or request.POST.get('id_shipping_type', None)
-    redirect_path = next_ or next_post or reverse('cart:checkout')
+    try:
+        form = AddressForm()
+        next_ = request.GET.get('next')
+        next_post = request.POST.get('next')
+        address_type = request.GET.get('address_type') or request.POST.get('id_shipping_type', None)
+        redirect_path = next_ or next_post or reverse('cart:checkout')
 
-    # determine billing profile for this request (guest or authenticated)
-    email_obj = None
-    if request.user.is_authenticated:
-        try:
-            email_obj = request.user.email
-        except Exception:
-            email_obj = None
-    else:
-        email_obj = request.session.get('customer_email') or request.session.get('email_obj')
+        # determine billing profile for this request (guest or authenticated)
+        email_obj = None
+        if request.user.is_authenticated:
+            try:
+                email_obj = request.user.email
+            except Exception:
+                email_obj = None
+        else:
+            email_obj = request.session.get('customer_email') or request.session.get('email_obj')
 
-    billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
+        billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
 
-    address_qs = None
-    if billing_profile is not None:
-        address_qs = Address.objects.filter(billing_profile=billing_profile)
+        address_qs = None
+        if billing_profile is not None:
+            address_qs = Address.objects.filter(billing_profile=billing_profile)
 
-    context = {
-        "form": form,
-        "address_type": address_type,
-        "next": redirect_path,
-        "address_qs": address_qs,
-        "action_url": reverse('checkout_address_reuse')
-    }
-    return render(request, 'addresses/create_address.html', context)
+        context = {
+            "form": form,
+            "address_type": address_type,
+            "next": redirect_path,
+            "address_qs": address_qs,
+            "action_url": reverse('checkout_address_reuse')
+        }
+        return render(request, 'addresses/create_address.html', context)
+    except Exception as e:
+        project_error_log.log(
+        logging.DEBUG if settings.DEBUG else logging.WARNING,
+        f'[{now}] def checkout_address_change_view\n{type(e)} {e}', exc_info=True)
+        raise Exception
+
 
 class AddressListView(LoginRequiredMixin, ListView):
     model = Address

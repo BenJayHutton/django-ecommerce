@@ -41,8 +41,8 @@ class MarketingPreferenceUpdateView(SuccessMessageMixin, UpdateView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] MarketingPreferenceUpdateView get_object\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
 
 class MailchimpWebhookView(CsrfExemptMixin, View):
@@ -70,5 +70,5 @@ class MailchimpWebhookView(CsrfExemptMixin, View):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] MailchimpWebhookView POST\n{type(e)} {e}', exc_info=True)
+            raise Exception

@@ -1,7 +1,7 @@
 import logging
 from django.conf import settings
 from django.utils import timezone
-from django.http import Http404, JsonResponse, HttpResponse
+from django.http import Http404, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect, get_object_or_404, render
@@ -13,7 +13,6 @@ from .models import Order, ProductPurchase
 
 now = timezone.now()
 project_error_log = logging.getLogger("project_error_log")
-project_exception_log = logging.getLogger("project_exception_log")
 
 
 class OrderCreateView(LoginRequiredMixin, CreateView):
@@ -29,8 +28,8 @@ class OrderCreateView(LoginRequiredMixin, CreateView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] OrderCreateView GET\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -49,8 +48,8 @@ class OrderUpdateView(LoginRequiredMixin, UpdateView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] OrderUpdateView GET\n {type(e)} {e}', exc_info=True)
+            raise Exception
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -69,8 +68,8 @@ def order_delete_view(request, pk):
     except Exception as e:
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
-        f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-        return HttpResponse(status=500)
+        f'[{now}] def order_delete_view\n{type(e)} {e}', exc_info=True)
+        raise Exception
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -84,8 +83,8 @@ class OrderListView(LoginRequiredMixin, ListView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] OrderListView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def get_queryset(self):
         return Order.objects.by_request(self.request) #.not_created() # show all orders 
@@ -102,8 +101,8 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] OrderDetailView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def get_object(self):
         qs = Order.objects.by_request(
@@ -126,8 +125,8 @@ class LibraryView(LoginRequiredMixin, ListView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] LibraryView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def get_queryset(self):
         return ProductPurchase.objects.products_by_request(
@@ -151,8 +150,8 @@ class VerifyOwnership(View):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] VerifyOwnership GET\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
 
 class OrderConfirmation(View):
@@ -176,5 +175,5 @@ class OrderConfirmation(View):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] OrderConfirmation POST\n{type(e)} {e}', exc_info=True)
+            raise Exception

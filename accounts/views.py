@@ -1,6 +1,5 @@
 import logging
 from django.conf import settings
-from django.http import HttpResponse
 from django.utils import timezone
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -35,8 +34,8 @@ class Accounts(LoginRequiredMixin, DetailView):
         except Exception as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] Accounts view get_context_data\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+                f'[{now}] Accounts get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
         
     def get_object(self):
         return self.request.user
@@ -76,8 +75,8 @@ class AccountEmailActivateView(FormMixin, View):
         except Exception as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] AccountEmailActivateView GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+                f'[{now}] AccountEmailActivateView GET\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def post(self, request, *args, **kwargs):
         try:
@@ -89,8 +88,8 @@ class AccountEmailActivateView(FormMixin, View):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] AccountEmailActivateView post\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)            
+            f'[{now}] AccountEmailActivateView post\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def form_valid(self, form):
         msg = """Activation link sent, please check email"""
@@ -165,7 +164,8 @@ class RegisterView(CreateView):
             guest_obj = None # do something else?
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
+                f'[{now}] RegisterView form_valid\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
         # create or get BillingProfile for this email and attach to user
         try:
@@ -190,8 +190,8 @@ class RegisterView(CreateView):
         except Exception as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+                f'[{now}] RegisterView form_valid\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
         # attach any orders created during the guest session to the billing_profile
         try:
@@ -200,8 +200,8 @@ class RegisterView(CreateView):
         except Exception as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=200)
+                f'[{now}] RegisterView form_valid\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
         # cleanup guest session marker if present
         try:
@@ -209,8 +209,8 @@ class RegisterView(CreateView):
         except Exception as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=200)
+                f'[{now}] RegisterView form_valid\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
         messages.success(request, "Account created. Please check your email to activate.")
         return super(RegisterView, self).form_valid(form)
@@ -233,8 +233,8 @@ class UserDetailUpdateView(LoginRequiredMixin, UpdateView):
         except Exception as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] RegisterView form_valid\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=200)
+                f'[{now}] UserDetailUpdateView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def get_success_url(self):
         return reverse("account:home")

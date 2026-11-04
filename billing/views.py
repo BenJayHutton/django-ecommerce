@@ -36,8 +36,8 @@ def pay_method_view(request):
     except Exception as e:
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
-        f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-        return HttpResponse(status=500)
+        f'[{now}] def pay_method_view\n{type(e)} {e}', exc_info=True)
+        raise Exception
     
 
 

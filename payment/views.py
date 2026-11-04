@@ -89,11 +89,12 @@ class StripeCharge(View):
                 "tax_behavior": "exclusive",
             })
 
-            domain = os.environ.get("BASE_URL")
+            domain = os.environ.get('BASE_URL')
+            port = os.environ.get('PORT')
             checkout_path = reverse('cart:checkout')
             checkout_path_success = reverse('cart:success')
-            success_url = f"{request.scheme}://{domain}{checkout_path_success}"
-            cancel_url = f"{request.scheme}://{domain}{checkout_path}"
+            success_url = f"{request.scheme}://{domain}:{port}{checkout_path_success}"
+            cancel_url = f"{request.scheme}://{domain}:{port}{checkout_path}"
             address_obj = order_obj.shipping_address
             
             customer = client.v1.customers.create({
@@ -158,7 +159,7 @@ class StripeCharge(View):
             f'[{now}] StripeCharge POST\n{type(e)} {e}', exc_info=True)
             stripe_error.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] [{event_name}: {event_id}]\n{session}', exc_info=True)
+                f'[{now}] [{event_name}: {event_id}]\n{type(e)} {e}\n{session}', exc_info=True)
             raise Exception
 
 
@@ -194,7 +195,7 @@ class StripeAdminView(View):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] StripeAdminView GET\n{type(e)} {e}', exc_info=True)
+            f'[{now}] StripeAdminView POST\n{type(e)} {e}', exc_info=True)
             raise Exception
 
 

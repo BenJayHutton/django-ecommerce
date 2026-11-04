@@ -1,7 +1,6 @@
 import logging
 from django.conf import settings
 from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import CreateView, ListView,UpdateView, DetailView
@@ -73,8 +72,8 @@ class BlogListView(ListView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] BlogListView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def get_queryset(self, *args, **kwargs):
         return Blog.objects.all()
@@ -100,5 +99,5 @@ class BlogDetailSlugView(DetailView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] BlogDetailSlugView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception

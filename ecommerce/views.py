@@ -32,7 +32,7 @@ class DefaultHomePage(TemplateView):
         except Exception as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] DefaultHomePage GET\n {type(e)} {e}', exc_info=True)
+                f'[{now}] DefaultHomePage GET\n{type(e)} {e}', exc_info=True)
             raise Exception
 
 
@@ -46,7 +46,7 @@ def contact_page(request):
     except Exception as e:
         project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] def contact_page\n {type(e)} {e}', exc_info=True)        
+            f'[{now}] def contact_page\n{type(e)} {e}', exc_info=True)        
         raise Exception
    
 
@@ -61,5 +61,5 @@ def about_page(request):
     except Exception as e:
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] def about_page \n {type(e)} {e}', exc_info=True)
+                f'[{now}] def about_page\n{type(e)} {e}', exc_info=True)
             raise Exception

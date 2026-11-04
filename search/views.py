@@ -10,7 +10,6 @@ from tags.models import Tag
 
 now = timezone.now()
 project_error_log = logging.getLogger("project_error_log")
-project_exception_log = logging.getLogger("project_exception_log")
 
 
 class SearchProductView(ListView):
@@ -25,8 +24,8 @@ class SearchProductView(ListView):
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
-            f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            return HttpResponse(status=500)
+            f'[{now}] SearchProductView get_context_data\n{type(e)} {e}', exc_info=True)
+            raise Exception
 
     def get_queryset(self, *args, **kwargs):
         request = self.request
@@ -42,14 +41,20 @@ class SearchTagView(ListView):
     template_name = "search/tag_view.html"
 
     def get(self, request, *args, **kwargs):
-        request = self.request
-        tag_obj = ["Film","Books","Trading Cards"]
-        tag = request.GET.get("tag")
-        sub_tag_obj = Tag.sub_tag(sub_tag=tag)
-        product_by_tag = Product.objects.search_tag(tag)
-        context = {
-            "product_list": product_by_tag,
-            "sub_tag_obj": sub_tag_obj,
-            "tag_obj": tag_obj
-        }
-        return render(request,"search/tag_view.html", context)
+        try:
+            request = self.request
+            tag_obj = ["Film","Books","Trading Cards"]
+            tag = request.GET.get("tag")
+            sub_tag_obj = Tag.sub_tag(sub_tag=tag)
+            product_by_tag = Product.objects.search_tag(tag)
+            context = {
+                "product_list": product_by_tag,
+                "sub_tag_obj": sub_tag_obj,
+                "tag_obj": tag_obj
+            }
+            return render(request,"search/tag_view.html", context)
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] SearchTagView GET\n{type(e)} {e}', exc_info=True)
+            raise Exception
