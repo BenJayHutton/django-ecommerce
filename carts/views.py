@@ -216,13 +216,17 @@ class CartDetailView(DetailView):
 def checkout_home(request, *args, **kwargs):
     try:
         currier_obj = None
+        if request.method == 'POST':
+            request.session["email_obj"] = request.POST.get("email")
         order_obj = None
         email_obj = request.session.get("email_obj")
+        print(f"email obj {email_obj}")
         session_key = request.session.session_key
         user_obj = request.user
         billing_address_id = request.session.get("billing_address_id", None)
         shipping_address_id = request.session.get("shipping_address_id", None)
         cart_obj, cart_created = Cart.objects.new_or_get(request)
+
         if cart_created or cart_obj.cart_items.count() == 0:
             redirect("cart:home")
         shipping_address_required = not cart_obj.is_digital
@@ -239,56 +243,64 @@ def checkout_home(request, *args, **kwargs):
             billing_profile = None
         # bind forms to POST if present (handle guest checkout even if no billing_profile exists yet)
         if request.method == 'POST':
-            request.session["email_obj"] = request.POST.get("email")
-            
-            guest_form = GuestForm(request=request, data=request.POST)
-            if guest_form.is_valid():
-                guest_obj = guest_form.save()
-                email_val = guest_obj.email
-                GuestEmail.objects.new_or_get(request, email=email_val)
-                billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_val)
-                request.session['customer_email'] = email_val
-
             login_form = LoginForm(request=request, data=request.POST)
-            if login_form.is_valid():
-                billing_profile, created = BillingProfile.objects.new_or_get(request)
-                if request.user.is_authenticated:
-                    billing_profile.email = request.user.email
-                    billing_profile.user = request.user
-                    billing_profile.save()
+            guest_form = GuestForm(request=request, data=request.POST)
+            try:
+                if guest_form.is_valid():
+                    guest_obj = guest_form.save()
+                    email_val = guest_obj.email
+                    GuestEmail.objects.new_or_get(request, email=email_val)
+                    billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_val)
+                    request.session['customer_email'] = email_val
+            except Exception as e:
+                print(f"Error with form {type(E)}: {E}")
+                project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
+                raise Exception
+            
+            try:
+                if login_form.is_valid():
+                    billing_profile, _ = BillingProfile.objects.new_or_get(request)
+                    if request.user.is_authenticated:
+                        billing_profile.email = request.user.email
+                        billing_profile.user = request.user
+                        billing_profile.save()
+            except Exception as e:
+                project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
+                raise Exception
+
         if billing_profile is not None:
-                if user_obj.is_authenticated:
-                    address_qs = Address.objects.filter(billing_profile=billing_profile)
-                else:
-                    address_qs = None
-                order_obj, order_obj_created = Order.objects.new_or_get(billing_profile, cart_obj, session_key=session_key)
-                request.session['order_obj'] = order_obj.order_id
-                order_obj.total = cart_obj.total
-                order_obj.vat = cart_obj.vat
-                order_obj.shipping_total = cart_obj.shipping
-                order_obj.subtotal = cart_obj.subtotal
-                order_obj.save()
-                
-        if shipping_address_id:
-            order_obj.shipping_address = Address.objects.get(id=shipping_address_id)
-        if billing_address_id:
-            order_obj.billing_address = Address.objects.get(id=billing_address_id)
-        if billing_address_id or shipping_address_id:
+            if user_obj.is_authenticated:
+                address_qs = Address.objects.filter(billing_profile=billing_profile)
+            else:
+                address_qs = None
+            order_obj, order_obj_created = Order.objects.new_or_get(billing_profile, cart_obj, session_key=session_key)
+            request.session['order_obj'] = order_obj.order_id
+            order_obj.total = cart_obj.total
+            order_obj.vat = cart_obj.vat
+            order_obj.shipping_total = cart_obj.shipping
+            order_obj.subtotal = cart_obj.subtotal
             order_obj.save()
+                
+            if shipping_address_id:
+                order_obj.shipping_address = Address.objects.get(id=shipping_address_id)
+            if billing_address_id:
+                order_obj.billing_address = Address.objects.get(id=billing_address_id)
+            if billing_address_id or shipping_address_id:
+                order_obj.save()
         context = {
-                "address_form": address_form,
-                "address_qs": address_qs,
-                "billing_profile": billing_profile,
-                "currier_obj":currier_obj,
-                "description": "Cart home",
-                "guest_form": guest_form,
-                "email_obj": email_obj,
-                "login_form": login_form,
-                "object": order_obj,
-                "publish_key": STRIPE_PUB_KEY,
-                "shipping_address_required": shipping_address_required,
-                "title": "Cart",
-            }
+            "address_form": address_form,
+            "address_qs": address_qs,
+            "billing_profile": billing_profile,
+            "currier_obj":currier_obj,
+            "description": "Cart home",
+            "guest_form": guest_form,
+            "email_obj": email_obj,
+            "login_form": login_form,
+            "object": order_obj,
+            "publish_key": STRIPE_PUB_KEY,
+            "shipping_address_required": shipping_address_required,
+            "title": "Cart",
+        }
         return render(request, "carts/checkout.html", context)
     except Exception as e:
         project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)

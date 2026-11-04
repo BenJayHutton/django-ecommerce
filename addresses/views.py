@@ -135,7 +135,7 @@ class AddressListView(LoginRequiredMixin, ListView):
 class AddressCreateView(LoginRequiredMixin, CreateView):
     model = Address
     form_class = AddressForm
-    template_name = 'addresses/address_form.html'
+    template_name = 'addresses/create_address.html'
     success_url = reverse_lazy('address:home')
     
     def form_valid(self, form):
@@ -155,7 +155,7 @@ class AddressCreateView(LoginRequiredMixin, CreateView):
 class AddressUpdateView(LoginRequiredMixin, UpdateView):
     model = Address
     form_class = AddressForm
-    template_name = 'addresses/address_form.html'
+    template_name = 'addresses/create_address.html'
     success_url = reverse_lazy('address:home')
     
     def get_queryset(self):            
