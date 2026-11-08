@@ -253,7 +253,7 @@ def checkout_home(request, *args, **kwargs):
                     billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_val)
                     request.session['customer_email'] = email_val
             except Exception as e:
-                print(f"Error with form {type(E)}: {E}")
+                print(f"Error with form {type(e)}: {e}")
                 project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
                 raise Exception
             

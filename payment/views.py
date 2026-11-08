@@ -50,7 +50,7 @@ class StripeCharge(View):
             if email is not None:
                 billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email)
             
-            if billing_profile is not None: # Doese the following statement belong here? 
+            if billing_profile is not None: # Does the following statement belong here? 
                 order_obj, order_created = Order.objects.new_or_get(billing_profile, cart_obj, session_key=request.session.session_key)
                 order_obj.total = cart_obj.total
                 order_obj.vat = cart_obj.vat
@@ -89,8 +89,8 @@ class StripeCharge(View):
                 "tax_behavior": "exclusive",
             })
 
-            domain = os.environ.get('BASE_URL')
-            port = os.environ.get('PORT')
+            domain = getattr(settings, 'BASE_URL', None)
+            port = getattr(settings, 'PORT', None)
             checkout_path = reverse('cart:checkout')
             checkout_path_success = reverse('cart:success')
             success_url = f"{request.scheme}://{domain}:{port}{checkout_path_success}"

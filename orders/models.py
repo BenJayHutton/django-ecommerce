@@ -135,7 +135,7 @@ class OrderManager(models.Manager):
             order_vat = order.vat
             order_shipping = order.shipping_total
             order_total = order.total
-            base_url = os.environ.get("BASE_URL")
+            base_url = getattr(settings, 'BASE_URL', None)
         context = {
             'name': cus_name,
             'order_id': order_id,

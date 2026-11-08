@@ -14,11 +14,8 @@ length = 32
 random_string = ''.join(random.choices(string.ascii_letters+string.digits+string.punctuation, k=length))
 DEFAULT_ACTIVATION_DAYS = getattr(settings, "DEFAULT_ACTIVATION_DAYS", 7)
 
-project_debug = logging.getLogger("project_debug_log")
-project_access = logging.getLogger("project_access_log")
-project_error = logging.getLogger("project_error_log")
-
 now = timezone.now()
+project_error = logging.getLogger("project_error_log")
 
 
 class UserManager(BaseUserManager):
@@ -216,7 +213,7 @@ class EmailActivation(models.Model):
                     )
                     return sent_mail
                 except Exception as e:
-                    project_debug.exception(f'[{now}] send_activation_email error: {type(e)}: {e}')
+                    project_error.exception(f'[{now}] send_activation_email error: {type(e)}: {e}')
                     return False
         return False
 
