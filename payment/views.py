@@ -1,8 +1,7 @@
 import json
 import stripe
-import os
 import logging
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.conf import settings
 from flask import jsonify
 from django.shortcuts import render
@@ -174,7 +173,7 @@ class StripeAdminView(View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] Accounts view GET\n {type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get (self, *args, **kwargs):
         try:
@@ -191,7 +190,7 @@ class StripeAdminView(View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] StripeAdminView POST\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class PaypalAdminView(View):
@@ -206,7 +205,7 @@ class PaypalAdminView(View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] PaypalAdminView GET\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 def payment_success(request):
@@ -219,4 +218,4 @@ def payment_success(request):
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
         f'[{now}] def payment_success\n{type(e)} {e}', exc_info=True)
-        raise Exception
+        return JsonResponse({"Error": str(e)}, status=400)
