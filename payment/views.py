@@ -91,10 +91,11 @@ class StripeCharge(View):
 
             domain = getattr(settings, 'BASE_URL', None)
             port = getattr(settings, 'PORT', None)
+            host_scheme = getattr(settings, 'HOST_SCHEME', None)
             checkout_path = reverse('cart:checkout')
             checkout_path_success = reverse('cart:success')
-            success_url = f"{request.scheme}://{domain}:{port}{checkout_path_success}"
-            cancel_url = f"{request.scheme}://{domain}:{port}{checkout_path}"
+            success_url = f"{host_scheme}{domain}:{port}{checkout_path_success}"
+            cancel_url = f"{host_scheme}{domain}:{port}{checkout_path}"
             address_obj = order_obj.shipping_address
             
             customer = client.v1.customers.create({
@@ -145,14 +146,8 @@ class StripeCharge(View):
             })
             event_name = session['object']
             event_id = session['id']
-            
             stripe_obj, created = StripeCheckoutSession.objects.new_or_get(request, event=session)
             return JsonResponse({"url": session.url})
-        except AttributeError as e:
-            project_error_log.log(
-                logging.DEBUG if settings.DEBUG else logging.WARNING,
-                f'[{now}] StripeCharge AttributeError POST\n{type(e)} {e}', exc_info=True)
-            raise AttributeError
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
@@ -160,7 +155,7 @@ class StripeCharge(View):
             stripe_error.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] [{event_name}: {event_id}]\n{type(e)} {e}\n{session}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class StripeAdminView(View):
