@@ -65,7 +65,6 @@ def checkout_address_reuse_view(request):
     try:
         form = AddressForm(request.POST or None)
         email_obj = request.session.get("email_obj")
-        billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
         next_ = request.GET.get('next')
         next_post = request.POST.get('next')
         address_type = request.POST.get('address_type', 'shipping')
@@ -93,22 +92,16 @@ def checkout_address_change_view(request):
         next_post = request.POST.get('next')
         address_type = request.GET.get('address_type') or request.POST.get('id_shipping_type', None)
         redirect_path = next_ or next_post or reverse('cart:checkout')
+        address_qs = Address.objects.none()
 
         # determine billing profile for this request (guest or authenticated)
         email_obj = None
         if request.user.is_authenticated:
-            try:
-                email_obj = request.user.email
-            except Exception:
-                email_obj = None
+            email_obj = request.user.email
+            billing_profile, billing_obj_created = BillingProfile.objects.new_or_get(request, email=email_obj)
+            address_qs = Address.objects.filter(billing_profile=billing_profile)
         else:
             email_obj = request.session.get('customer_email') or request.session.get('email_obj')
-
-        billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_obj)
-
-        address_qs = None
-        if billing_profile is not None:
-            address_qs = Address.objects.filter(billing_profile=billing_profile)
 
         context = {
             "form": form,
