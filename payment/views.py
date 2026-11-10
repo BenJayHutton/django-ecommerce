@@ -28,15 +28,20 @@ if stripe_api_key:
 class StripeCharge(View):
 
     def post(self, request):
+        event_name = "unknown"
+        event_id = None
+        session = None
+        billing_profile = None
+
         try:
             email = None
             cart_obj, cart_created = Cart.objects.new_or_get(request)
             user_obj = request.user
-            if hasattr(user_obj, "full_name"):
-                full_name = user_obj.full_name
-            else:
-                full_name = "Guest"
-            
+            full_name = getattr(user_obj, "full_name", None) or getattr(user_obj, "first_name", None)
+            if not full_name:
+                full_name = email or "Guest"
+            full_name = str(full_name).strip() or "Guest"
+
             if  not cart_obj or cart_created:
                 return jsonify({"error": "Your cart is empty."}, status=400)
 
@@ -96,7 +101,10 @@ class StripeCharge(View):
             success_url = f"{host_scheme}{domain}:{port}{checkout_path_success}"
             cancel_url = f"{host_scheme}{domain}:{port}{checkout_path}"
             address_obj = order_obj.shipping_address
-            
+            if address_obj is None:
+                return JsonResponse({"error": "Shipping address is required before checkout."}, status=400)
+
+            shipping_name = full_name or "Customer"
             customer = client.v1.customers.create({
                 "email": email,
                 "name": full_name,
@@ -108,8 +116,8 @@ class StripeCharge(View):
                     "country": "GB",
                 },
                 "shipping": {
-                    "name": full_name,
-                        "address": {
+                    "name": shipping_name,
+                    "address": {
                         "line1": address_obj.address_line_1,
                         "line2": address_obj.address_line_2 or "",
                         "city": address_obj.city,
@@ -154,7 +162,7 @@ class StripeCharge(View):
             stripe_error.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] [{event_name}: {event_id}]\n{type(e)} {e}\n{session}', exc_info=True)
-            return JsonResponse({"Error": str(e)}, status=400)
+            return JsonResponse({"error": str(e)}, status=400)
 
 
 class StripeAdminView(View):
