@@ -1,10 +1,10 @@
 import logging
 from django.conf import settings
-from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
 from django.contrib.messages.views import SuccessMessageMixin
-from django.views.generic import UpdateView, View
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
+from django.utils import timezone
+from django.views.generic import UpdateView, View
 
 from .forms import MarketingPreferenceForm
 from .mixins import CsrfExemptMixin
@@ -42,7 +42,7 @@ class MarketingPreferenceUpdateView(SuccessMessageMixin, UpdateView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] MarketingPreferenceUpdateView get_object\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class MailchimpWebhookView(CsrfExemptMixin, View):
@@ -71,4 +71,4 @@ class MailchimpWebhookView(CsrfExemptMixin, View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] MailchimpWebhookView POST\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)

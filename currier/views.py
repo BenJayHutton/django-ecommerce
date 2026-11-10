@@ -1,10 +1,11 @@
 import logging
-from django.conf import settings
-from django.utils import timezone
-from django.shortcuts import render, redirect
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, View
-from django.urls import reverse_lazy
 from decimal import Decimal
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.utils import timezone
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, View
 
 from .models import Currier
 from .forms import CurrierForm
@@ -21,8 +22,10 @@ class Currier(ListView):
             context['my_value'] = 'Hello, World!'
             return context
         except Exception as e:
-            project_error_log.exception(f'[{now}] Currier get_context_data\n{type(e)} {e}')
-            raise Exception
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] Currier get_context_data\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_curriers_price_list(*args, **kwargs):
         try:
@@ -37,13 +40,21 @@ class Currier(ListView):
                 }
             return couriers
         except Exception as e:
-            project_error_log.exception(f'[{now}] Currier get_curriers_price_list\n{type(e)} {e}')
-            raise Exception
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] Currier get_curriers_price_list\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_price(*args, **kwargs):
-        weight = kwargs.get("weight")
-        royal_mail_2nd = RoyalMail.second_class(weight=weight)
-        return royal_mail_2nd
+        try:
+            weight = kwargs.get("weight")
+            royal_mail_2nd = RoyalMail.second_class(weight=weight)
+            return royal_mail_2nd
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] Currier get_price\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
 class CurrierDetailView(DetailView):
     pass

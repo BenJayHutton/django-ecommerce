@@ -1,8 +1,8 @@
 import logging
 from django.conf import settings
-from django.utils import timezone
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.views.generic import View
 
 now = timezone.now()
@@ -42,7 +42,7 @@ class RoyalMail(Shipping):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] RoyalMail get_shipping_cost\n {type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
         
 
     def first_class(weight=None):

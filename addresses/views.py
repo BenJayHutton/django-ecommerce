@@ -1,8 +1,9 @@
 import logging
 from django.conf import settings
-from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView
@@ -57,7 +58,7 @@ def checkout_address_create_view(request):
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
         f'[{now}] def checkout_address_create_view\n{type(e)} {e}', exc_info=True)
-        raise Exception
+        return JsonResponse({"Error": str(e)}, status=400)
 
 
 def checkout_address_reuse_view(request):
@@ -82,7 +83,7 @@ def checkout_address_reuse_view(request):
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
         f'[{now}] def checkout_address_reuse_view\n{type(e)} {e}', exc_info=True)
-        raise Exception
+        return JsonResponse({"Error": str(e)}, status=400)
 
 
 def checkout_address_change_view(request):
@@ -121,7 +122,7 @@ def checkout_address_change_view(request):
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
         f'[{now}] def checkout_address_change_view\n{type(e)} {e}', exc_info=True)
-        raise Exception
+        return JsonResponse({"Error": str(e)}, status=400)
 
 
 class AddressListView(LoginRequiredMixin, ListView):
@@ -129,8 +130,14 @@ class AddressListView(LoginRequiredMixin, ListView):
     template_name = 'addresses/address_list.html'
     
     def get_queryset(self):
-        return Address.objects.filter(user=self.request.user)
-    
+        try:
+            return Address.objects.filter(user=self.request.user)
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] AddressListView get_queryset\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
+
 
 class AddressCreateView(LoginRequiredMixin, CreateView):
     model = Address
@@ -158,8 +165,14 @@ class AddressUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'addresses/create_address.html'
     success_url = reverse_lazy('address:home')
     
-    def get_queryset(self):            
-        return Address.objects.filter(user=self.request.user)
+    def get_queryset(self):
+        try:
+            return Address.objects.filter(user=self.request.user)
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] AddressUpdateView get_queryset\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
         
 
 class AddressDeleteView(LoginRequiredMixin, DeleteView):
@@ -168,4 +181,10 @@ class AddressDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('address:home')
 
     def get_queryset(self):
-        return Address.objects.filter(user=self.request.user)
+        try:
+            return Address.objects.filter(user=self.request.user)
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] AddressDeleteView get_queryset\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)

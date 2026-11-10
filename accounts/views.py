@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.safestring import mark_safe
@@ -35,7 +36,7 @@ class Accounts(LoginRequiredMixin, DetailView):
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] Accounts get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
         
     def get_object(self):
         return self.request.user
@@ -76,7 +77,7 @@ class AccountEmailActivateView(FormMixin, View):
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] AccountEmailActivateView GET\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def post(self, request, *args, **kwargs):
         try:
@@ -89,7 +90,7 @@ class AccountEmailActivateView(FormMixin, View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] AccountEmailActivateView post\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def form_valid(self, form):
         msg = """Activation link sent, please check email"""
@@ -165,7 +166,7 @@ class RegisterView(CreateView):
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] RegisterView form_valid\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
         # create or get BillingProfile for this email and attach to user
         try:
@@ -191,7 +192,7 @@ class RegisterView(CreateView):
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] RegisterView form_valid\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
         # attach any orders created during the guest session to the billing_profile
         try:
@@ -201,7 +202,7 @@ class RegisterView(CreateView):
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] RegisterView form_valid\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
         # cleanup guest session marker if present
         try:
@@ -210,7 +211,7 @@ class RegisterView(CreateView):
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] RegisterView form_valid\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
         messages.success(request, "Account created. Please check your email to activate.")
         return super(RegisterView, self).form_valid(form)
@@ -221,7 +222,13 @@ class UserDetailUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'accounts/detail-update-view.html'
 
     def get_object(self):
-        return self.request.user
+        try:
+            return self.request.user
+        except Exception as e:
+            project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] UserDetailUpdateView get_object\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_context_data(self, *args, **kwargs):
         try:
@@ -234,7 +241,7 @@ class UserDetailUpdateView(LoginRequiredMixin, UpdateView):
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] UserDetailUpdateView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_success_url(self):
         return reverse("account:home")

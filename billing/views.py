@@ -1,9 +1,9 @@
 import logging
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 
@@ -37,7 +37,7 @@ def pay_method_view(request):
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
         f'[{now}] def pay_method_view\n{type(e)} {e}', exc_info=True)
-        raise Exception
+        return JsonResponse({"Error": str(e)}, status=400)
     
 
 
@@ -51,9 +51,9 @@ def pay_method_createview(request):
 
         token = request.POST.get("token")
 
-        if token is not None:
-            new_card_obj = Card.objects.add_new(billing_profile, token)
-        return JsonResponse({"message": "Success! your card was added"})
+        # if token is not None:
+        #     new_card_obj = Card.objects.add_new(billing_profile, token)
+        # return JsonResponse({"message": "Success! your card was added"})
     return HttpResponse("401...not found", status=401)
 
 class CreateView(LoginRequiredMixin, CreateView):

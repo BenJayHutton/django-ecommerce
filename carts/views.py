@@ -1,11 +1,11 @@
 import json
 import logging
 from django.conf import settings
-from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 from django.views.generic import CreateView, UpdateView, DetailView, View
 
 from accounts.forms import LoginForm, GuestForm
@@ -31,41 +31,53 @@ class CartHomeView(View):
     queryset = Cart.objects.all()
 
     def get(self, request):
-        cart_obj, cart_obj_created = Cart.objects.new_or_get(request)
-        request.session["cart_id"] = cart_obj.id
-        context = {
-            "title": "Cart",
-            "description": "Checkout home",
-            "cart_obj": cart_obj,
-        }
-        return render(request, "carts/home.html", context)
+        try:
+            cart_obj, cart_obj_created = Cart.objects.new_or_get(request)
+            request.session["cart_id"] = cart_obj.id
+            context = {
+                "title": "Cart",
+                "description": "Checkout home",
+                "cart_obj": cart_obj,
+            }
+            return render(request, "carts/home.html", context)
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] CartHomeView GET\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
     
     def post(self, request):
-        cart_item_add = request.POST.get('cart_item_add', False)
-        cart_item_update = request.POST.get('cart_item_update', False)
-        cart_item_remove = request.POST.get('cart_item_remove', False)        
-        product_quantity = request.POST.get('product-quantity', False)        
-        is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+        try:
+            cart_item_add = request.POST.get('cart_item_add', False)
+            cart_item_update = request.POST.get('cart_item_update', False)
+            cart_item_remove = request.POST.get('cart_item_remove', False)        
+            product_quantity = request.POST.get('product-quantity', False)        
+            is_ajax = request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
-        if is_ajax:
-            json_data={}
+            if is_ajax:
+                json_data={}
+                if cart_item_add:
+                    json_data = self.add_to_cart(request)
+                if cart_item_update:
+                    json_data = self.update_cart(request)
+                if cart_item_remove:
+                    json_data = self.delete_cart(request)
+                json_string = json.dumps(json_data)
+                return HttpResponse(json_string)
+            
             if cart_item_add:
-                json_data = self.add_to_cart(request)
+                self.add_to_cart(request)
+                print("CartHomeView,self.add_to_cart(request)")
             if cart_item_update:
-                json_data = self.update_cart(request)
+                self.update_cart(request)
             if cart_item_remove:
-                json_data = self.delete_cart(request)
-            json_string = json.dumps(json_data)
-            return HttpResponse(json_string)
-        
-        if cart_item_add:
-            self.add_to_cart(request)
-            print("CartHomeView,self.add_to_cart(request)")
-        if cart_item_update:
-            self.update_cart(request)
-        if cart_item_remove:
-            self.delete_cart(request)
-        return redirect("cart:home")
+                self.delete_cart(request)
+            return redirect("cart:home")
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] CartHomeView POST\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
     
     def add_to_cart(self, request):
         try:
@@ -97,8 +109,10 @@ class CartHomeView(View):
             }
             return json_data
         except Exception as e:
-            project_error_log.exception(f'[{now}] CartHomeView.add_to_cart\n{type(e)} {e}')
-            raise Exception
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] CartHomeView add_to_cart\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def update_cart(self, request):
         try:
@@ -128,8 +142,10 @@ class CartHomeView(View):
             }
             return json_data
         except Exception as e:
-            project_error_log.debug(f'[{now}] CartHomeView.update_cart\n{type(e)} {e}')
-            raise Exception        
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] CartHomeView update_cart\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
     
     def delete_cart(self, request):
         try:
@@ -144,8 +160,10 @@ class CartHomeView(View):
             request.session['cart_item_count'] = cart_obj.cart_items.count()
             return cart_obj
         except Exception as e:
-            project_error_log.debug(f'[{now}] CartHomeView.delete_cart\n{type(e)} {e}')
-            raise Exception
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] CartHomeView delete_cart\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class CartCreateView(LoginRequiredMixin, CreateView):
@@ -169,8 +187,10 @@ class CartUpdateView(LoginRequiredMixin, UpdateView):
                 return redirect("home")
             return super().get(*args, **kwargs)
         except Exception as e:
-            project_error_log.debug(f'[{now}] CartUpdateView get\n{type(e)} {e}')
-            raise Exception
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] CartUpdateView GET\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -187,8 +207,10 @@ def cart_delete_view(request, pk):
         }
         return render(request, "carts/delete_cart.html", context)
     except Exception as e:
-        project_error_log.debug(f'[{now}] def cart_delete_view\n{type(e)} {e}')
-        raise Exception
+        project_error_log.log(
+        logging.DEBUG if settings.DEBUG else logging.WARNING,
+        f'[{now}] def cart_delete_view\n{type(e)} {e}', exc_info=True)
+        return JsonResponse({"Error": str(e)}, status=400)
 
 
 class CartDetailView(DetailView):
@@ -202,15 +224,22 @@ class CartDetailView(DetailView):
             context['title'] = "Cart Details"
             return context
         except Exception as e:
-            project_error_log.debug(f'[{now}] CartDetailView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] CartDetailView get_context_data\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_object(self, *args, **kwargs):
-        pk = self.kwargs.get('pk')
-        qs = Cart.objects.get(id=pk)
-        if qs:
-            return qs
-        raise Http404
+        try:
+            pk = self.kwargs.get('pk')
+            qs = Cart.objects.get(id=pk)
+            if qs:
+                return qs
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] CartDetailView get_object\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 def checkout_home(request, *args, **kwargs):
@@ -253,9 +282,10 @@ def checkout_home(request, *args, **kwargs):
                     billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request, email=email_val)
                     request.session['customer_email'] = email_val
             except Exception as e:
-                print(f"Error with form {type(e)}: {e}")
-                project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
-                raise Exception
+                project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
+                return JsonResponse({"Error": str(e)}, status=404)
             
             try:
                 if login_form.is_valid():
@@ -265,8 +295,10 @@ def checkout_home(request, *args, **kwargs):
                         billing_profile.user = request.user
                         billing_profile.save()
             except Exception as e:
-                project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
-                raise Exception
+                project_error_log.log(
+                logging.DEBUG if settings.DEBUG else logging.WARNING,
+                f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
+                return JsonResponse({"Error": str(e)}, status=400)
 
         if billing_profile is not None:
             if user_obj.is_authenticated:
@@ -303,8 +335,10 @@ def checkout_home(request, *args, **kwargs):
         }
         return render(request, "carts/checkout.html", context)
     except Exception as e:
-        project_error_log.debug(f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
-        raise Exception
+        project_error_log.log(
+        logging.DEBUG if settings.DEBUG else logging.WARNING,
+        f'[{now}] def checkout_home\n{type(e)} {e}', exc_info=True)
+        return JsonResponse({"Error": str(e)}, status=400)
 
 
 def checkout_done_view(request):
@@ -334,5 +368,7 @@ def checkout_done_view(request):
         request.session['cart_item_count'] = 0
         return render(request, "carts/checkout-done.html", context)
     except Exception as e:
-            project_error_log.debug(f'[{now}] def checkout_done_view\n{type(e)} {e}', exc_info=True)
-            raise Exception
+        project_error_log.log(
+        logging.DEBUG if settings.DEBUG else logging.WARNING,
+        f'[{now}] def checkout_done_view\n{type(e)} {e}', exc_info=True)
+        return JsonResponse({"Error": str(e)}, status=400)

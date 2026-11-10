@@ -1,10 +1,10 @@
-import json
 import logging
 from django.conf import settings
-from django.utils import timezone
-from django.http import HttpResponse, JsonResponse
-from django.views.generic import ListView
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
+from django.views.generic import ListView
+
 from products.models import Product
 from tags.models import Tag
 
@@ -25,9 +25,9 @@ class SearchProductView(ListView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] SearchProductView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
-    def get_queryset(self, *args, **kwargs):
+    def get_queryset(self, *args, **kwargs):   
         request = self.request
         method_dict = request.GET
         query = method_dict.get('query', None)
@@ -57,4 +57,4 @@ class SearchTagView(ListView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] SearchTagView GET\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)

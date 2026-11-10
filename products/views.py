@@ -1,13 +1,12 @@
 import logging
-from django.http import Http404, HttpResponse, JsonResponse, HttpResponseRedirect
 from django.conf import settings
-from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.forms.models import model_to_dict
+from django.http import Http404, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404, render
 from django.utils import timezone
 from django.views.generic import CreateView, ListView, UpdateView, DetailView, View
+
 from analytics.mixins import ObjectViewedMixin
 from carts.models import Cart
 from orders.models import ProductPurchase
@@ -34,7 +33,7 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] Accounts view GET\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -54,7 +53,7 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] Accounts view GET\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
         
     def form_valid(self, form):
         return super().form_valid(form)
@@ -74,7 +73,7 @@ def product_delete_view(request, slug):
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
         f'[{now}] Accounts view GET\n{type(e)} {e}', exc_info=True)
-        raise Exception
+        return JsonResponse({"Error": str(e)}, status=400)
 
 
 class ProductListView(ListView):
@@ -105,7 +104,7 @@ class ProductListView(ListView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] ProductListView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_queryset(self, *args, **kwargs):
         queryset = Product.objects.filter(active=True)
@@ -137,7 +136,7 @@ class UserProductHistoryView(LoginRequiredMixin, ListView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] UserProductHistoryView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_queryset(self, *args, **kwargs):
         request = self.request
@@ -184,7 +183,7 @@ class ProductDownloadView(View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] ProductDownloadView GET\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class ProductDetailSlugView(ObjectViewedMixin, DetailView):
@@ -224,7 +223,7 @@ class ProductDetailSlugView(ObjectViewedMixin, DetailView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] ProductDetailSlugView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_object(self, *args, **kwargs):
         request = self.request
@@ -243,5 +242,5 @@ class ProductDetailSlugView(ObjectViewedMixin, DetailView):
             project_error_log.log(
                 logging.DEBUG if settings.DEBUG else logging.WARNING,
                 f'[{now}] ProductDetailSlugView get_object eroor\n{type(e)} {e}', exc_info=True)
-            raise Http404("Product not found")
+            return JsonResponse({"Error": str(e)}, status=404)
         return instance

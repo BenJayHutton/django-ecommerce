@@ -29,7 +29,7 @@ class OrderCreateView(LoginRequiredMixin, CreateView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] OrderCreateView GET\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -49,7 +49,7 @@ class OrderUpdateView(LoginRequiredMixin, UpdateView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] OrderUpdateView GET\n {type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def form_valid(self, form):
         return super().form_valid(form)
@@ -69,7 +69,7 @@ def order_delete_view(request, pk):
         project_error_log.log(
         logging.DEBUG if settings.DEBUG else logging.WARNING,
         f'[{now}] def order_delete_view\n{type(e)} {e}', exc_info=True)
-        raise Exception
+        return JsonResponse({"Error": str(e)}, status=400)
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -84,7 +84,7 @@ class OrderListView(LoginRequiredMixin, ListView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] OrderListView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_queryset(self):
         return Order.objects.by_request(self.request) #.not_created() # show all orders 
@@ -102,15 +102,21 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] OrderDetailView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_object(self):
-        qs = Order.objects.by_request(
-            self.request).filter(
-            order_id=self.kwargs.get('order_id'))
-        if qs.count() == 1:
-            return qs.first()
-        raise Http404
+        try:
+            qs = Order.objects.by_request(
+                self.request).filter(
+                order_id=self.kwargs.get('order_id'))
+            if qs.count() == 1:
+                return qs.first()
+            raise Http404
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] OrderDetailView get_object\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class LibraryView(LoginRequiredMixin, ListView):
@@ -126,7 +132,7 @@ class LibraryView(LoginRequiredMixin, ListView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] LibraryView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_queryset(self):
         return ProductPurchase.objects.products_by_request(
@@ -151,7 +157,7 @@ class VerifyOwnership(View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] VerifyOwnership GET\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class OrderConfirmation(View):
@@ -176,4 +182,4 @@ class OrderConfirmation(View):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] OrderConfirmation POST\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)

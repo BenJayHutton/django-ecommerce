@@ -1,13 +1,13 @@
 import json
 import stripe
 import logging
-from django.http import JsonResponse
 from django.conf import settings
-from flask import jsonify
+from django.http import JsonResponse
 from django.shortcuts import render
-from django.views.generic import View
 from django.urls import reverse
 from django.utils import timezone
+from django.views.generic import View
+from flask import jsonify
 
 from billing.models import BillingProfile
 from carts.models import Cart

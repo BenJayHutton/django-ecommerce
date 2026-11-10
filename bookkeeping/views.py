@@ -1,9 +1,10 @@
 import logging
 from django.conf import settings
-from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, ListView,UpdateView, DetailView, DeleteView
 
 from .forms import CashbookForm, CapitalLedgerForm, PurchaseLedgerForm, SalesLedgerForm, VatLedgerForm
@@ -18,23 +19,35 @@ class LedgerListView(LoginRequiredMixin, ListView):
     ledger_title = None
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["credit_transactions"] = self.object_list.filter(
-            debit_credit="Credit"
-        )
-        context["debit_transactions"] = self.object_list.filter(
-            debit_credit="Debit"
-        )
-        context["ledger_title"] = self.ledger_title
-        context["create_ledger_url"] = self.model().create_ledger_url()
-        return context
+        try:
+            context = super().get_context_data(**kwargs)
+            context["credit_transactions"] = self.object_list.filter(
+                debit_credit="Credit"
+            )
+            context["debit_transactions"] = self.object_list.filter(
+                debit_credit="Debit"
+            )
+            context["ledger_title"] = self.ledger_title
+            context["create_ledger_url"] = self.model().create_ledger_url()
+            return context
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] LedgerListView get_context_data\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class LedgerDetailView(LoginRequiredMixin, DetailView):
     def get(self, *args, **kwargs):
-        if not self.request.user.staff:
-            return redirect("home")
-        return super().get(*args, **kwargs)
+        try:
+            if not self.request.user.staff:
+                return redirect("home")
+            return super().get(*args, **kwargs)
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] LedgerDetailView GET\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def form_valid(self, form):
         return super().form_valid(form) 
@@ -52,9 +65,15 @@ class LedgerUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'bookkeeping/ledger_create.html'
 
     def get(self, *args, **kwargs):
-        if not self.request.user.staff:
-            return redirect("bookkeeping:home")
-        return super().get(*args, **kwargs)
+        try:
+            if not self.request.user.staff:
+                return redirect("bookkeeping:home")
+            return super().get(*args, **kwargs)
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] LedgerUpdateView GET\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def form_valid(self, form):
         return super().form_valid(form)

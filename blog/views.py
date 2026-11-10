@@ -1,8 +1,9 @@
 import logging
 from django.conf import settings
-from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import timezone
 from django.views.generic import CreateView, ListView,UpdateView, DetailView
 
 from tags.models import Tag
@@ -73,10 +74,16 @@ class BlogListView(ListView):
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
             f'[{now}] BlogListView get_context_data\n{type(e)} {e}', exc_info=True)
-            raise Exception
+            return JsonResponse({"Error": str(e)}, status=400)
 
     def get_queryset(self, *args, **kwargs):
-        return Blog.objects.all()
+        try:
+            return Blog.objects.all()
+        except Exception as e:
+            project_error_log.log(
+            logging.DEBUG if settings.DEBUG else logging.WARNING,
+            f'[{now}] BlogListView get_context_data\n{type(e)} {e}', exc_info=True)
+            return JsonResponse({"Error": str(e)}, status=400)
 
 
 class BlogDetailSlugView(DetailView):
