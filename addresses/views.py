@@ -131,7 +131,10 @@ class AddressListView(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         try:
-            return Address.objects.filter(user=self.request.user)
+            if self.request.user.is_authenticated:
+                return Address.objects.filter(user=self.request.user)
+            else:
+                return Address.objects.none()
         except Exception as e:
             project_error_log.log(
             logging.DEBUG if settings.DEBUG else logging.WARNING,
